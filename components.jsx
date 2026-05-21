@@ -124,7 +124,7 @@ const TIMELINE_LABELS = {
   activity: "Activity", food: "Food", stay: "Stay", transit: "Transit",
 };
 
-function DayTimeline({ schedule }) {
+function DayTimeline({ schedule, highlightKey }) {
   if (!schedule || !schedule.length) return null;
   const isMobile = useIsMobile();
   const labelWidth = isMobile ? 50 : 60;
@@ -244,6 +244,11 @@ function DayTimeline({ schedule }) {
             ? `${Math.floor(dur / 60)}h${dur % 60 ? ` ${dur % 60}m` : ""}`
             : `${dur}m`;
           const tight = height < 38;
+          const isHighlighted = highlightKey && (
+            highlightKey === "_stay_"
+              ? it.kind === "stay"
+              : it.label.toLowerCase().includes(highlightKey.toLowerCase())
+          );
           return (
             <div key={i} style={{
               position: "absolute", left: padLeft, right: 8,
@@ -254,6 +259,10 @@ function DayTimeline({ schedule }) {
               borderLeft: `3px solid ${color}`,
               borderRadius: 5,
               padding: tight ? "3px 10px" : "6px 12px",
+              outline: isHighlighted ? `2px solid ${color}` : "none",
+              outlineOffset: 1,
+              boxShadow: isHighlighted ? `0 0 0 4px ${color}30` : "none",
+              transition: "outline 0.2s, box-shadow 0.2s",
               overflow: "hidden",
               display: "flex", flexDirection: "column",
               justifyContent: "center", gap: 1,
@@ -276,6 +285,62 @@ function DayTimeline({ schedule }) {
             </div>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+function DayGuide({ guide, onClose }) {
+  React.useEffect(() => {
+    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = ""; };
+  }, [onClose]);
+  return (
+    <div onClick={onClose} style={{
+      position: "fixed", inset: 0, zIndex: 1000,
+      background: "rgba(28,46,37,0.72)", backdropFilter: "blur(4px)",
+      display: "flex", alignItems: "center", justifyContent: "center",
+      padding: "40px 24px", fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
+    }}>
+      <div onClick={e => e.stopPropagation()} style={{
+        background: "#fbfaf5", borderRadius: 14, width: "min(640px, 100%)",
+        maxHeight: "calc(100vh - 80px)", display: "flex", flexDirection: "column",
+        boxShadow: "0 24px 60px -20px rgba(0,0,0,0.5)", overflow: "hidden",
+      }}>
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "12px 18px", borderBottom: "1px solid #e2dfd6", background: "white", flexShrink: 0,
+        }}>
+          <div>
+            <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.16em", color: "#a8a298", textTransform: "uppercase", marginBottom: 2 }}>Day itinerary</div>
+            <div style={{ fontSize: 15, fontWeight: 500, color: "#1f1d18" }}>{guide.title}</div>
+          </div>
+          <button onClick={onClose} style={{
+            padding: "6px 12px", borderRadius: 7, background: "white", color: "#3a3833",
+            border: "1px solid #e2dfd6", fontSize: 12, fontWeight: 600, cursor: "pointer",
+          }}>Close ✕</button>
+        </div>
+        <div style={{ overflowY: "auto", padding: "8px 0" }}>
+          {guide.stops.map((stop, i) => (
+            <div key={i} style={{
+              padding: "14px 20px",
+              borderBottom: i < guide.stops.length - 1 ? "1px solid #f0ede4" : "none",
+            }}>
+              <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 6 }}>
+                <span style={{
+                  width: 22, height: 22, borderRadius: "50%", background: "#2d6a52",
+                  color: "white", fontSize: 11, fontWeight: 700, flexShrink: 0,
+                  display: "inline-flex", alignItems: "center", justifyContent: "center",
+                }}>{stop.num}</span>
+                <span style={{ fontSize: 14, fontWeight: 600, color: "#1f1d18", flex: 1 }}>{stop.name}</span>
+                <span style={{ fontSize: 11.5, color: "#a8a298", flexShrink: 0 }}>{stop.duration}</span>
+              </div>
+              <div style={{ fontSize: 13, color: "#4a4640", lineHeight: 1.6, paddingLeft: 32 }}>{stop.desc}</div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -374,13 +439,40 @@ function TransportLine({ item, loc }) {
   );
 }
 
+function RouteGuideButton({ guide }) {
+  const [showGuide, setShowGuide] = React.useState(false);
+  return (
+    <React.Fragment>
+      <div style={{ marginBottom: 6 }}>
+        <button onClick={() => setShowGuide(true)} style={{
+          display: "inline-flex", alignItems: "center", gap: 6,
+          fontSize: 12, fontWeight: 600, padding: "6px 12px", borderRadius: 7,
+          background: "#eef0f8", color: "#3a5a8c", border: "1px solid #c8d4e8",
+          cursor: "pointer", fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
+          letterSpacing: "0.01em",
+        }}>ℹ Route guide</button>
+      </div>
+      {showGuide && <GuidePopup guide={guide} onClose={() => setShowGuide(false)} />}
+    </React.Fragment>
+  );
+}
+
 function DayCard({ day, defaultOpen = false }) {
   const [open, setOpen] = React.useState(defaultOpen);
   const isMobile = useIsMobile();
   const hasMore = day.activities.length + day.food.length + day.notes.length + (day.schedule ? day.schedule.length : 0) + (day.bookings ? day.bookings.length : 0) > 0;
   const mapData = (window.TRIP_DATA.DAY_MAPS || {})[day.id];
   const DayMapComp = window.DayMap;
-  const showMap = open && !!mapData && !!DayMapComp && !isMobile;
+  const isNarrow = useIsMobile(1000);
+  const showMap = open && !!mapData && !!DayMapComp;
+  const [showDayGuide, setShowDayGuide] = React.useState(false);
+  const [highlightKey, setHighlightKey] = React.useState(null);
+  const highlightTimer = React.useRef(null);
+  const handleMapItemClick = React.useCallback((item) => {
+    clearTimeout(highlightTimer.current);
+    setHighlightKey(item.type === "accom" ? "_stay_" : item.label);
+    highlightTimer.current = setTimeout(() => setHighlightKey(null), 3500);
+  }, []);
   const statusLabel = {
     confirmed: "Confirmed",
     pending: "To book",
@@ -418,6 +510,12 @@ function DayCard({ day, defaultOpen = false }) {
             <Badge status={day.status}>{statusLabel}</Badge>
           </div>
           {day.transport.map((t, i) => <TransportLine key={i} item={t} loc={day.loc} />)}
+          {day.summary && (
+            <div style={{
+              fontSize: 12, color: "#7a7468", marginTop: day.transport.length ? 4 : 2,
+              fontFamily: "'IBM Plex Sans', system-ui, sans-serif", lineHeight: 1.5,
+            }}>{day.summary}</div>
+          )}
         </div>
         {hasMore && (
           <div style={{
@@ -427,10 +525,11 @@ function DayCard({ day, defaultOpen = false }) {
           }}>{open ? "− less" : "+ more"}</div>
         )}
       </div>
+      {showDayGuide && day.guide && <DayGuide guide={day.guide} onClose={() => setShowDayGuide(false)} />}
       {open && hasMore && (
-        <div style={{ borderTop: "1px solid #f0ede4", display: showMap ? "grid" : "block", gridTemplateColumns: "1fr 1fr", alignItems: "stretch" }}>
+        <div style={{ borderTop: "1px solid #f0ede4", display: showMap && !isNarrow ? "grid" : "block", gridTemplateColumns: "1fr 1fr", alignItems: "stretch" }}>
           <div style={{ padding: isMobile ? "14px 14px 16px" : "16px 18px 18px 18px", background: "#fbfaf5" }}>
-          {day.schedule && day.schedule.length > 0 && <DayTimeline schedule={day.schedule} />}
+          {day.schedule && day.schedule.length > 0 && <DayTimeline schedule={day.schedule} highlightKey={highlightKey} />}
           {day.bookings && day.bookings.length > 0 && (
             <div style={{ marginBottom: 16 }}>
               <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "#a8a298", marginBottom: 8, fontFamily: "'IBM Plex Sans', system-ui, sans-serif" }}>Bookings for today</div>
@@ -441,15 +540,37 @@ function DayCard({ day, defaultOpen = false }) {
               </div>
             </div>
           )}
-          {day.activities.length > 0 && (
+          {day.guide && (
+            <div style={{ marginBottom: 16 }}>
+              <button onClick={() => setShowDayGuide(true)} style={{
+                display: "inline-flex", alignItems: "center", gap: 6,
+                fontSize: 12, fontWeight: 600, padding: "7px 14px", borderRadius: 8,
+                background: "#eef4ee", color: "#27583e", border: "1px solid #bcd5c2",
+                cursor: "pointer", fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
+                letterSpacing: "0.01em",
+              }}>
+                <span>📋</span> View day itinerary guide
+              </button>
+            </div>
+          )}
+          {(day.activities.length > 0 || day.routeGuide) && (
             <div style={{ marginBottom: 14 }}>
               <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "#a8a298", marginBottom: 6, fontFamily: "'IBM Plex Sans', system-ui, sans-serif" }}>Activities</div>
+              {day.routeGuide && <RouteGuideButton guide={day.routeGuide} />}
               {day.activities.map((a, i) => {
                 const text = typeof a === "string" ? a : a.text;
                 const link = typeof a === "object" ? a.url : null;
                 const linkLabel = (typeof a === "object" && a.urlLabel) || "More info";
+                const isHighlighted = highlightKey && highlightKey !== "_stay_" && text.toLowerCase().includes(highlightKey.toLowerCase());
                 return (
-                  <div key={i} style={{ fontSize: 13.5, color: "#2a2823", padding: "3px 0", lineHeight: 1.5, display: "flex", gap: 8, alignItems: "baseline", flexWrap: "wrap" }}>
+                  <div key={i} style={{
+                    fontSize: 13.5, color: "#2a2823", padding: "3px 6px", lineHeight: 1.5,
+                    display: "flex", gap: 8, alignItems: "baseline", flexWrap: "wrap",
+                    borderRadius: 6, marginBottom: 1,
+                    background: isHighlighted ? "#fff8e0" : "transparent",
+                    outline: isHighlighted ? "1.5px solid #c69112" : "none",
+                    transition: "background 0.2s, outline 0.2s",
+                  }}>
                     <span style={{ color: "#bcb6a8" }}>—</span>
                     <span style={{ flex: 1, minWidth: 0 }}>{text}</span>
                     {link && <BookingLink url={link} label={linkLabel} />}
@@ -462,13 +583,23 @@ function DayCard({ day, defaultOpen = false }) {
           {day.food.length > 0 && (
             <div style={{ marginBottom: 14 }}>
               <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "#a8a298", marginBottom: 6, fontFamily: "'IBM Plex Sans', system-ui, sans-serif" }}>Food & drink</div>
-              {day.food.map((f, i) => (
-                <div key={i} style={{ fontSize: 13.5, color: "#2a2823", padding: "3px 0", lineHeight: 1.5, display: "flex", gap: 8, alignItems: "baseline" }}>
-                  <span style={{ color: "#bcb6a8" }}>—</span>
-                  <span style={{ flex: 1 }}>{f}</span>
-                  <MapLink query={f} loc={day.loc} />
-                </div>
-              ))}
+              {day.food.map((f, i) => {
+                const isHighlighted = highlightKey && highlightKey !== "_stay_" && f.toLowerCase().includes(highlightKey.toLowerCase());
+                return (
+                  <div key={i} style={{
+                    fontSize: 13.5, color: "#2a2823", padding: "3px 6px", lineHeight: 1.5,
+                    display: "flex", gap: 8, alignItems: "baseline",
+                    borderRadius: 6, marginBottom: 1,
+                    background: isHighlighted ? "#fff8e0" : "transparent",
+                    outline: isHighlighted ? "1.5px solid #c69112" : "none",
+                    transition: "background 0.2s, outline 0.2s",
+                  }}>
+                    <span style={{ color: "#bcb6a8" }}>—</span>
+                    <span style={{ flex: 1 }}>{f}</span>
+                    <MapLink query={f} loc={day.loc} />
+                  </div>
+                );
+              })}
             </div>
           )}
           {day.notes.length > 0 && (
@@ -493,8 +624,14 @@ function DayCard({ day, defaultOpen = false }) {
           )}
           </div>
           {showMap && (
-            <div style={{ borderLeft: "1px solid #f0ede4", overflow: "hidden", borderRadius: "0 0 14px 0" }}>
-              <DayMapComp mapData={mapData} />
+            <div style={{
+              borderLeft: isNarrow ? "none" : "1px solid #f0ede4",
+              borderTop: isNarrow ? "1px solid #f0ede4" : "none",
+              overflow: "hidden",
+              borderRadius: isNarrow ? "0 0 14px 14px" : "0 0 14px 0",
+              height: isNarrow ? 260 : undefined,
+            }}>
+              <DayMapComp mapData={mapData} onItemClick={handleMapItemClick} />
             </div>
           )}
         </div>
@@ -676,6 +813,6 @@ function MediaModal({ url, label, kind, onClose }) {
 
 Object.assign(window, {
   STATUS_COLORS, MODE_COLORS, MODE_ICONS, TIMELINE_COLORS, TIMELINE_LABELS,
-  Badge, SecLabel, TransportLine, DayCard, DayTimeline, BookingLink, MediaModal, MapLink, GuidePopup,
+  Badge, SecLabel, TransportLine, DayCard, DayTimeline, BookingLink, MediaModal, MapLink, GuidePopup, DayGuide, RouteGuideButton,
   mapsSearchUrl, mapsDirectionsUrl, useIsMobile,
 });

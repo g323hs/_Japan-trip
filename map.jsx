@@ -13,6 +13,30 @@ const STOP_PALETTE = {
   urgent:    "#c4502f",
 };
 
+// Returns compass bearing (0=N, 90=E) between two [lat,lng] points
+function segmentBearing(from, to) {
+  const toRad = d => d * Math.PI / 180;
+  const dLng = toRad(to[1] - from[1]);
+  const φ1 = toRad(from[0]), φ2 = toRad(to[0]);
+  const y = Math.sin(dLng) * Math.cos(φ2);
+  const x = Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(dLng);
+  return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+}
+
+function addRouteArrow(L, map, from, to, color) {
+  const mid = [(from[0] + to[0]) / 2, (from[1] + to[1]) / 2];
+  const bearing = segmentBearing(from, to);
+  const icon = L.divIcon({
+    html: `<svg width="14" height="14" viewBox="0 0 14 14" style="transform:rotate(${bearing}deg);display:block;">
+      <polygon points="7,1 13,13 7,9.5 1,13" fill="${color}" opacity="0.9"/>
+    </svg>`,
+    className: "",
+    iconSize: [14, 14],
+    iconAnchor: [7, 7],
+  });
+  L.marker(mid, { icon, interactive: false, keyboard: false }).addTo(map);
+}
+
 function TripMap() {
   const containerRef = React.useRef(null);
   const mapRef = React.useRef(null);
@@ -51,6 +75,7 @@ function TripMap() {
           color: s.color, weight: s.weight,
           dashArray: s.dashArray || undefined, opacity: s.opacity,
         }).addTo(map).bindTooltip(r.label, { sticky: true, direction: "top" });
+        addRouteArrow(L, map, r.from, r.to, s.color);
       });
 
       // Markers
@@ -181,9 +206,11 @@ function TripMap() {
   );
 }
 
-function DayMap({ mapData }) {
+function DayMap({ mapData, onItemClick }) {
   const containerRef = React.useRef(null);
   const mapRef = React.useRef(null);
+  const onItemClickRef = React.useRef(onItemClick);
+  React.useEffect(() => { onItemClickRef.current = onItemClick; }, [onItemClick]);
 
   React.useEffect(() => {
     if (!mapData) return;
@@ -220,11 +247,13 @@ function DayMap({ mapData }) {
             color: s.color, weight: s.weight,
             dashArray: s.dashArray || undefined, opacity: s.opacity,
           }).addTo(map).bindTooltip(`${from.label} → ${to.label}`, { sticky: true, direction: "top" });
+          addRouteArrow(L, map, [from.lat, from.lng], [to.lat, to.lng], s.color);
         }
         mapData.route.forEach(pt => {
           L.circleMarker([pt.lat, pt.lng], {
             radius: 5, color: "white", weight: 2, fillColor: "#5b574e", fillOpacity: 0.9,
-          }).addTo(map).bindTooltip(pt.label, { direction: "top" });
+          }).addTo(map).bindTooltip(pt.label, { direction: "top" })
+            .on("click", () => onItemClickRef.current?.({ type: "route", label: pt.label }));
           allPoints.push([pt.lat, pt.lng]);
         });
       }
@@ -236,7 +265,8 @@ function DayMap({ mapData }) {
           html: `<div style="width:32px;height:32px;border-radius:50%;background:#c4502f;border:2.5px solid white;box-shadow:0 2px 8px rgba(40,30,15,0.4);display:flex;align-items:center;justify-content:center;font-size:15px;color:white;line-height:1;">♥</div>`,
           className: "", iconSize: [32, 32], iconAnchor: [16, 16], popupAnchor: [0, -20],
         });
-        L.marker([lat, lng], { icon }).addTo(map).bindTooltip(name, { direction: "top" });
+        L.marker([lat, lng], { icon }).addTo(map).bindTooltip(name, { direction: "top" })
+          .on("click", () => onItemClickRef.current?.({ type: "accom", label: name }));
         allPoints.push([lat, lng]);
       }
 
@@ -244,7 +274,8 @@ function DayMap({ mapData }) {
       (mapData.pois || []).forEach(poi => {
         L.circleMarker([poi.lat, poi.lng], {
           radius: 7, color: "white", weight: 2, fillColor: "#c69112", fillOpacity: 0.85,
-        }).addTo(map).bindTooltip(poi.name, { direction: "top" });
+        }).addTo(map).bindTooltip(poi.name, { direction: "top" })
+          .on("click", () => onItemClickRef.current?.({ type: "poi", label: poi.name }));
         allPoints.push([poi.lat, poi.lng]);
       });
 
@@ -270,7 +301,7 @@ function DayMap({ mapData }) {
 
   if (!mapData) return null;
   return (
-    <div style={{ position: "relative", height: "100%", minHeight: 300 }}>
+    <div style={{ position: "relative", height: "100%", minHeight: 260 }}>
       <div ref={containerRef} style={{ position: "absolute", inset: 0 }} />
       <div style={{
         position: "absolute", bottom: 8, left: 8, zIndex: 1000,
@@ -288,6 +319,7 @@ function DayMap({ mapData }) {
           <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#c69112", border: "1.5px solid white", display: "inline-block" }} />
           <span style={{ color: "#5b574e" }}>Point of interest</span>
         </div>
+        <div style={{ color: "#a8a298", fontSize: 9.5, fontStyle: "italic", marginTop: 2 }}>Click a pin to highlight</div>
       </div>
     </div>
   );
