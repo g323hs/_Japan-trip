@@ -9,12 +9,6 @@ const TRIP = {
 const URGENT = [
   {
     type: "pending",
-    title: "Get booking ref: Wakkanai → Rishiri ferry (13 Jul, 07:15)",
-    body: "Leika has booked it on your behalf — ask her for the confirmation reference so it's on hand for the day.",
-    deadline: "This week",
-  },
-  {
-    type: "pending",
     title: "Book on 17 June: Wakkanai → Asahikawa train (13:01 → 16:45)",
     body: "Opens exactly 1 month before. Set a calendar reminder.",
     deadline: "17 Jun",
@@ -27,22 +21,26 @@ const URGENT = [
   },
 ];
 
-const SOYA_BUS_REBUN_B = "uploads/soya-bus-rebun-b-ticket.pdf";
+const SOYA_BUS_REBUN_B = "uploads/transport/soya-bus-rebun-b-ticket.pdf";
 
-const PH_TRAVEL_PDF = "uploads/ph-travel-eticket-FF686P-v2.pdf";
+const PH_TRAVEL_PDF = "uploads/transport/air-india-eticket-FF686P.pdf";
 const PH_TRAVEL_PNR = "FF686P";       // Brightsun/PH Travel reservation code
 const PH_TRAVEL_AI_PNR = "XS55VZ";    // Air India confirmation number
 const PH_TRAVEL_TKT = "0986393639706";
 const TRIPCOM_CTS_WKJ = "https://uk.trip.com/online/orderdetail/index?orderid=1653714554019095&from=email&template=TRIP_BOOKING_CONFIRMED&locale=en-GB&channel=email&subChannel=TRIP_BOOKING_CONFIRMED&messagecode=TRIP_BOOKING_CONFIRMED&oid=1653714554019095&orderId=1653714554019095&redirectFromOnline=1&accesstoken=";
 const HEARTLAND_FERRY = "https://reserve.heartlandferry.jp/hlf/wrv/webmgr.php?ifc_manager=login.view&lang_kbn=2";
-const REBUNSHIRI_PDF = "uploads/rebun-accom-14-17.pdf";
-const BUDDY_HOUSE_PDF = "uploads/asahikawa buddy house accom 17-19.pdf";
-const MOSHIRIPA_URL = "https://secure.booking.com/confirmation.en-gb.html?aid=812878&label=metaskyscan-uk-desktop-hotel-4974409_bw-53_los-1_lang-en_curr-GBP_group-3_gst-1_cid-20260712_dow-Sunday_fc-false_tod-17_mktgrp-_clkid-7baa3c8b-d71b-444e-a08b-b710eea6c1c3&sid=2b15b1e88d7a3ed0ecb5e6b16f61cbbd&auth_key=qesWroP67MzKW5Rd&bp_travel_purpose=leisure&hostname=www.booking.com&is_bsd_shown=1&pfi=10776413112610&pre_pbb_price=6996&pre_price=6996&rt_num_blocks=8&send_sms_confirmation=1&source=book&srpvid=41857171cade02ee&ua_created=0&";
-const HOSTEL_TOMAR_URL = "https://secure.booking.com/confirmation.en-gb.html?aid=304142&label=gen173bo-10EgxjaGFuZ2VfZGF0ZXMoggI46AdIM1gDaFCIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGYAgSoAgG4AoC0stAGwAIB0gIkNmI1OGNhMzItMDE1MS00MmMxLWIwOTYtNjEwZjA3OWZlMTJi2AIB4AIB&auth_key=4kbojz0RkYW3Iwlh&source=change_dates";
-const GRAND_HOSTEL_LDK_URL = "https://secure.booking.com/tpi_confirmation.en-gb.html?label=gen173nr-10CAEoggI46AdIM1gEaFCIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4ApfhsdAGwAIB0gIkM2UwZWZjNDAtMzdkYi00ZGFhLWJkY2MtMTg0OWNjMDc5YWY12AIB4AIB&sid=65b31a614012a9a856133d0082479adc&aid=304142&ws_auth_key=MYLaeZPBNiEsg1gS";
-const YUYUKAN_URL = "https://secure.booking.com/confirmation.en-gb.html?label=gen173nr-10CAEoggI46AdIM1gEaFCIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4ApfhsdAGwAIB0gIkM2UwZWZjNDAtMzdkYi00ZGFhLWJkY2MtMTg0OWNjMDc5YWY12AIB4AIB&sid=65b31a614012a9a856133d0082479adc&aid=304142&auth_key=pOdhkljxz4xcZzYz&source=mytrips";
+const MOSHIRIPA_PDF       = "uploads/accom/moshiripa-wakkanai-12-13jul.pdf";
+const REBUNSHIRI_PDF      = "uploads/accom/rebunshiri-rebun-14-17jul.pdf";
+const BUDDY_HOUSE_PDF     = "uploads/accom/buddy-house-asahikawa-17-19jul.pdf";
+const HOSTEL_TOMAR_PDF    = "uploads/accom/tomar-furano-19-20jul.pdf";
+const GRAND_HOSTEL_LDK_PDF = "uploads/accom/grand-hostel-ldk-sapporo-20-23jul.png";
+const YUYUKAN_PDF         = "uploads/accom/yuyukan-chitose-23-24jul.pdf";
 
 const PEACH_BOOKING_URL = "https://flights.booking.com/booking/order-details/524ccbdfa11eff43e7b770e9b734b5650aa073efedb656ca68dff1022615a87d5288f48e1fa3bea71cf58f2249dfcc66be08f4eb88d420a6ebc8c0e158e925279c07eb0d93cf359290af0e139ff0?";
+
+const FERRY_WKJ_RISHIRI_CONF = "uploads/transport/ferry-wakkanai-rishiri-13jul.png";
+const FERRY_RISHIRI_REBUN_CONF = "uploads/transport/ferry-rishiri-rebun-14jul.png";
+const FERRY_REBUN_WKJ_CONF = "uploads/transport/ferry-rebun-wakkanai-17jul.png";
 
 const DAYS = [
   { id: 1, date: "7 Jul", short: "Tue", title: "Fly London → Delhi", loc: "Heathrow", status: "confirmed", phase: "outbound",
@@ -107,13 +105,13 @@ const DAYS = [
     bookings: [
       { label: "Peach NRT → CTS", url: PEACH_BOOKING_URL },
       { label: "Trip.com · CTS → Wakkanai", url: TRIPCOM_CTS_WKJ },
-      { label: "Guest House Moshiripa (Booking.com)", url: MOSHIRIPA_URL },
+      { label: "Guest House Moshiripa", url: MOSHIRIPA_PDF },
     ] },
-  { id: 5, date: "13 Jul", short: "Mon", title: "Ferry to Rishiri + cycling", loc: "Rishiri Island", status: "pending", phase: "islands",
+  { id: 5, date: "13 Jul", short: "Mon", title: "Ferry to Rishiri + cycling", loc: "Rishiri Island", status: "confirmed", phase: "islands",
     summary: "🚲 7hr island cycling course · 🌋 Views of Mt. Rishiri · 🍱 Ryokan dinner at Saito Inn",
     transport: [
       { mode: "walk", text: "Leave Moshiripa 6:30am · 15-min walk to ferry terminal", meta: "Set alarm — early start" },
-      { mode: "ferry", text: "Ferry Wakkanai → Rishiri · 07:15 → 08:55", meta: "7,180¥ / £33.65 each · Leika has booked — get ref" },
+      { mode: "ferry", text: "Ferry Wakkanai → Rishiri · 07:15 → 08:55", meta: "BOOKED · ref 2607-07596 ✓ · 7,180¥ / £33.65 each" },
       { mode: "car", text: "Saito Ryokan pickup at ferry terminal → ryokan", meta: "Arranged · drop luggage at ryokan before heading out" },
       { mode: "bike", text: "Bikes from Saito Ryokan", meta: "Pick up after dropping bags" },
     ],
@@ -133,12 +131,16 @@ const DAYS = [
       { start: "09:00", end: "16:00", label: "7hr cycling course", kind: "bike" },
       { start: "16:00", end: "18:00", label: "Check in Saito Ryokan", kind: "stay" },
       { start: "18:00", end: "20:00", label: "Dinner at ryokan", kind: "food" },
+    ],
+    bookings: [
+      { label: "Heartland · Wakkanai → Rishiri", url: HEARTLAND_FERRY },
+      { label: "Ferry confirmation (Leika's booking)", url: FERRY_WKJ_RISHIRI_CONF },
     ] },
   { id: 6, date: "14 Jul", short: "Tue", title: "Rishiri morning → Ferry to Rebun", loc: "Rebun Island", status: "confirmed", phase: "islands",
     summary: "🏛️ Rebun Folk Museum · ♨️ Onsen at Usuyuki-no-Yu · 🏠 Check in Rebunshiri from 4pm",
     transport: [
       { mode: "bike", text: "Morning: shorter cycling course on Rishiri", meta: "Bikes still from Saito Ryokan" },
-      { mode: "ferry", text: "Ferry Oshidomari → Kafuka · 13:15 → 14:00", meta: "BOOKED · ref 2607-07999 ✓" },
+      { mode: "ferry", text: "Ferry Oshidomari → Kafuka · 13:15 → 14:00", meta: "BOOKED · ref 2607-07999 ✓ · 1,800¥ / £8.41 per adult" },
     ],
     activities: [
       { text: "Morning: shorter Rishiri cycling course before the ferry", url: "https://www.town.rishirifuji.hokkaido.jp/rishirifuji/1404.htm", urlLabel: "Route & info" },
@@ -159,6 +161,7 @@ const DAYS = [
     ],
     bookings: [
       { label: "Heartland · Rishiri → Rebun", url: HEARTLAND_FERRY },
+      { label: "Ferry confirmation (George's booking)", url: FERRY_RISHIRI_REBUN_CONF },
       { label: "Shimanoyado Rebunshiri · #6117.328.292 PIN 0351", url: REBUNSHIRI_PDF },
     ] },
   { id: 7, date: "15 Jul", short: "Wed", title: "Rebun cycling day", loc: "Rebun Island", status: "confirmed", phase: "islands",
@@ -167,9 +170,9 @@ const DAYS = [
       { mode: "bike", text: "Rent from Cat Rock", meta: "3,000¥ / ~£14 · 24hr" },
     ],
     activities: [
-      { text: "Course 13 first — sunrise at Momoiwa Observatory", url: "uploads/rebun-cycling-routes.png", urlLabel: "Route map" },
-      { text: "Course 15 — Kitano Canary Park (café attached)", url: "uploads/rebun-cycling-routes.png", urlLabel: "Route map" },
-      { text: "Course 14 last", url: "uploads/rebun-cycling-routes.png", urlLabel: "Route map" },
+      { text: "Course 13 first — sunrise at Momoiwa Observatory", url: "uploads/activity/rebun-cycling-routes.png", urlLabel: "Route map" },
+      { text: "Course 15 — Kitano Canary Park (café attached)", url: "uploads/activity/rebun-cycling-routes.png", urlLabel: "Route map" },
+      { text: "Course 14 last", url: "uploads/activity/rebun-cycling-routes.png", urlLabel: "Route map" },
     ],
     food: ["Coffee at Kitano Canary Park café (mid-Course 15)"],
     notes: [],
@@ -209,7 +212,7 @@ const DAYS = [
   { id: 9, date: "17 Jul", short: "Fri", title: "Rebun → Wakkanai → Asahikawa", loc: "Asahikawa", status: "pending", phase: "mainland",
     summary: "🍱 Bento from Wakkanai station · 🏙️ Explore Asahikawa evening · 🏠 Buddy House check-in from 16:00",
     transport: [
-      { mode: "ferry", text: "Check out · Ferry Rebun → Wakkanai · 08:55 → 10:50", meta: "BOOKED · ref 2607-09701 ✓" },
+      { mode: "ferry", text: "Check out · Ferry Rebun → Wakkanai · 08:55 → 10:50", meta: "BOOKED · ref 2607-09701 ✓ · 3,950¥ / £18.46 per adult" },
       { mode: "walk", text: "10-min walk: ferry terminal → Wakkanai station", meta: "Grab a bento for the train" },
       { mode: "train", text: "Train Wakkanai → Asahikawa · 13:01 → 16:45", meta: "Book exactly on 17 Jun" },
     ],
@@ -225,6 +228,8 @@ const DAYS = [
       { start: "19:00", end: "20:30", label: "Dinner", kind: "food" },
     ],
     bookings: [
+      { label: "Heartland · Rebun → Wakkanai", url: HEARTLAND_FERRY },
+      { label: "Ferry confirmation (George's booking)", url: FERRY_REBUN_WKJ_CONF },
       { label: "Buddy House · #5278.868.395 PIN 9824", url: BUDDY_HOUSE_PDF },
     ] },
   { id: 10, date: "18 Jul", short: "Sat", title: "Asahidake hike + cable car", loc: "Asahikawa / Asahidake", status: "confirmed", phase: "mainland",
@@ -281,7 +286,7 @@ const DAYS = [
       { start: "19:30", end: "20:45", label: "Ningle Terrace", kind: "activity" },
     ],
     bookings: [
-      { label: "Hostel Tomar (Booking.com)", url: HOSTEL_TOMAR_URL },
+      { label: "Hostel Tomar", url: HOSTEL_TOMAR_PDF },
       { label: "Furano bus routes", url: "https://www.furanobus.jp/rosen/" },
     ] },
   { id: 12, date: "20 Jul", short: "Mon", title: "Blue Pond → Sapporo", loc: "Sapporo", status: "confirmed", phase: "mainland",
@@ -322,7 +327,7 @@ const DAYS = [
       { start: "18:24", end: "19:30", label: "Train + check in", kind: "stay" },
     ],
     bookings: [
-      { label: "Grand Hostel LDK Sapporo", url: GRAND_HOSTEL_LDK_URL },
+      { label: "Grand Hostel LDK Sapporo", url: GRAND_HOSTEL_LDK_PDF },
       { label: "Directions: Tomar → Blue Pond", url: "https://www.google.com/maps/dir/Tomar+%26+Eversa+(Hostel+and+Cafe+Lounge),+%E3%82%B3%E3%83%B3%E3%82%B7%E3%82%A7%E3%83%AB%E3%82%B8%E3%83%A5+%E3%83%95%E3%83%A9%E3%83%8E%E5%86%85+2-27+Motomachi,+Furano,+Hokkaido+076-0031,+Japan/Shirogane+Blue+Pond+(Aoiike),+Shirogane,+Biei,+Kamikawa+District,+Hokkaido+071-0235,+Japan/@43.4948001,142.3340925,11z/data=!3m1!4b1!4m14!4m13!1m5!1m1!1s0x5f734d29ea305185:0xd172fb3995cdbe!2m2!1d142.388071!2d43.3471364!1m5!1m1!1s0x5f0ccc62de222a6f:0x4cd181f9f4b779e!2m2!1d142.6142144!2d43.4934738!3e3?entry=ttu&g_ep=EgoyMDI2MDUxMy4wIKXMDSoASAFQAw%3D%3D" },
     ] },
   { id: 13, date: "21 Jul", short: "Tue", title: "Sapporo day 1 · Nature & City Streets", loc: "Sapporo", status: "confirmed", phase: "mainland",
@@ -356,7 +361,7 @@ const DAYS = [
       ],
     },
     bookings: [
-      { label: "Grand Hostel LDK Sapporo", url: GRAND_HOSTEL_LDK_URL },
+      { label: "Grand Hostel LDK Sapporo", url: GRAND_HOSTEL_LDK_PDF },
     ] },
   { id: 14, date: "22 Jul", short: "Wed", title: "Sapporo day 2 · Seasonal Highlights", loc: "Sapporo", status: "confirmed", phase: "mainland",
     summary: "🗿 Hill of the Buddha · 🎨 Sapporo Art Park · 🎓 Hokkaido University · 🌃 Mt. Moiwa night view · 🍜 Tanuki Koji dinner",
@@ -391,7 +396,7 @@ const DAYS = [
       ],
     },
     bookings: [
-      { label: "Grand Hostel LDK Sapporo", url: GRAND_HOSTEL_LDK_URL },
+      { label: "Grand Hostel LDK Sapporo", url: GRAND_HOSTEL_LDK_PDF },
     ] },
   { id: 15, date: "23 Jul", short: "Thu", title: "Sapporo day 3 → Chitose", loc: "Sapporo / Chitose", status: "confirmed", phase: "mainland",
     summary: "🕰️ Clock Tower · 🦀 Nijo Market seafood · 📡 TV Tower + Odori Park · 🍜 Ramen Alley · 🏮 Tanuki Koji · 🍺 Beer Garden Genghis Khan BBQ",
@@ -433,7 +438,7 @@ const DAYS = [
       ],
     },
     bookings: [
-      { label: "遊悠館 Chitose", url: YUYUKAN_URL },
+      { label: "遊悠館 Chitose", url: YUYUKAN_PDF },
     ] },
   { id: 16, date: "24 Jul", short: "Fri", title: "Fly Sapporo → Tokyo", loc: "Tokyo", status: "urgent", phase: "tokyo-2",
     summary: "🏙️ 4 more days in Tokyo · accommodation TBC ⚠️",
@@ -483,47 +488,40 @@ const DAYS = [
 
 
 const FLIGHTS = [
-  { date: "7 Jul",  route: "LHR → DEL",         detail: "Air India 2016 · 21:05 · Seat 049A", status: "confirmed", url: PH_TRAVEL_PDF, urlLabel: "E-ticket FF686P" },
-  { date: "8 Jul",  route: "DEL → HND Tokyo",   detail: "Air India 358 · 18:10 · Seat 044K",  status: "confirmed", url: PH_TRAVEL_PDF, urlLabel: "E-ticket FF686P" },
-  { date: "12 Jul", route: "NRT → CTS Sapporo", detail: "Peach Aviation · 11:50 · £98.98 / ~21,100¥", status: "confirmed", url: PEACH_BOOKING_URL },
-  { date: "12 Jul", route: "CTS → Wakkanai",    detail: "15:30 → 16:25",                  status: "confirmed", url: "https://uk.trip.com/online/orderdetail/index?orderid=1653714554019095&from=email&template=TRIP_BOOKING_CONFIRMED&locale=en-GB&channel=email&subChannel=TRIP_BOOKING_CONFIRMED&messagecode=TRIP_BOOKING_CONFIRMED&oid=1653714554019095&orderId=1653714554019095&redirectFromOnline=1&accesstoken=", urlLabel: "View on Trip.com" },
-  { date: "24 Jul", route: "CTS → NRT Tokyo",   detail: "Peach Aviation · 11:50",         status: "confirmed", url: PEACH_BOOKING_URL },
-  { date: "28 Jul", route: "HND → DEL",         detail: "Air India 357 · 11:50 · Seat 044K", status: "confirmed", url: PH_TRAVEL_PDF, urlLabel: "E-ticket FF686P" },
-  { date: "29 Jul", route: "DEL → LHR",         detail: "Air India 161 · 00:30 · Seat 037H", status: "confirmed", url: PH_TRAVEL_PDF, urlLabel: "E-ticket FF686P" },
+  { date: "7 Jul",  route: "LHR → DEL",         detail: "Air India 2016 · 21:05 · Seat 049A · £690 total (all 4 AI flights)", status: "confirmed", gbp: 690,   url: PH_TRAVEL_PDF, urlLabel: "E-ticket FF686P" },
+  { date: "8 Jul",  route: "DEL → HND Tokyo",   detail: "Air India 358 · 18:10 · Seat 044K (incl. in LHR→DEL)",              status: "confirmed", gbp: null,  url: PH_TRAVEL_PDF, urlLabel: "E-ticket FF686P" },
+  { date: "12 Jul", route: "NRT → CTS Sapporo", detail: "Peach Aviation · 11:50 · £98.98 / ~21,100¥",                        status: "confirmed", gbp: 98.98, url: PEACH_BOOKING_URL },
+  { date: "12 Jul", route: "CTS → Wakkanai",    detail: "15:30 → 16:25",                                                     status: "confirmed", gbp: null,  url: "https://uk.trip.com/online/orderdetail/index?orderid=1653714554019095&from=email&template=TRIP_BOOKING_CONFIRMED&locale=en-GB&channel=email&subChannel=TRIP_BOOKING_CONFIRMED&messagecode=TRIP_BOOKING_CONFIRMED&oid=1653714554019095&orderId=1653714554019095&redirectFromOnline=1&accesstoken=", urlLabel: "View on Trip.com" },
+  { date: "24 Jul", route: "CTS → NRT Tokyo",   detail: "Peach Aviation · 11:50",                                            status: "confirmed", gbp: null,  url: PEACH_BOOKING_URL },
+  { date: "28 Jul", route: "HND → DEL",         detail: "Air India 357 · 11:50 · Seat 044K (incl. in LHR→DEL)",             status: "confirmed", gbp: null,  url: PH_TRAVEL_PDF, urlLabel: "E-ticket FF686P" },
+  { date: "29 Jul", route: "DEL → LHR",         detail: "Air India 161 · 00:30 · Seat 037H (incl. in LHR→DEL)",             status: "confirmed", gbp: null,  url: PH_TRAVEL_PDF, urlLabel: "E-ticket FF686P" },
 ];
 
 const FERRIES = [
-  { date: "13 Jul", route: "Wakkanai → Rishiri", detail: "07:15 → 08:55 · 7,180¥ / £33.65 each",    note: "Leika booked", status: "pending" },
-  { date: "14 Jul", route: "Rishiri → Rebun",    detail: "13:15 → 14:00 · ref 2607-07999", note: "Booked ✓", status: "confirmed", url: "https://reserve.heartlandferry.jp/hlf/wrv/webmgr.php?ifc_manager=login.view&lang_kbn=2", urlLabel: "Manage on Heartland" },
-  { date: "17 Jul", route: "Rebun → Wakkanai",   detail: "08:55 → 10:50 · ref 2607-09701", note: "Booked ✓", status: "confirmed", url: HEARTLAND_FERRY, urlLabel: "Manage on Heartland" },
+  { date: "13 Jul", route: "Wakkanai → Rishiri", detail: "07:15 → 08:55 · ref 2607-07596 · 7,180¥ / £33.65 (2 adults) · £16.83 each", note: "Booked ✓", status: "confirmed", gbp: 16.83, url: HEARTLAND_FERRY, urlLabel: "Manage on Heartland", confUrl: FERRY_WKJ_RISHIRI_CONF },
+  { date: "14 Jul", route: "Rishiri → Rebun",    detail: "13:15 → 14:00 · ref 2607-07999 · 1,800¥ / £8.41 per adult",   note: "Booked ✓", status: "confirmed", gbp: 8.41,  url: HEARTLAND_FERRY, urlLabel: "Manage on Heartland", confUrl: FERRY_RISHIRI_REBUN_CONF },
+  { date: "17 Jul", route: "Rebun → Wakkanai",   detail: "08:55 → 10:50 · ref 2607-09701 · 3,950¥ / £18.46 per adult",  note: "Booked ✓", status: "confirmed", gbp: 18.46, url: HEARTLAND_FERRY, urlLabel: "Manage on Heartland", confUrl: FERRY_REBUN_WKJ_CONF },
 ];
 
 const GROUND = [
-  { date: "12 Jul", route: "Wakkanai airport → Moshiripa", detail: "Soya bus · ~39 min · cash",         note: "No pre-book",   status: "gray" },
-  { date: "17 Jul", route: "Wakkanai → Asahikawa train",   detail: "13:01 → 16:45",                     note: "Book 17 Jun!",  status: "pending" },
-  { date: "18 Jul", route: "Asahikawa → Asahidake",        detail: "Bus 66番 · 7:15am · 1,800¥ / ~£8.45",         note: "No pre-book",   status: "gray" },
-  { date: "19 Jul", route: "Asahikawa → Furano",           detail: "Lavender Train bus · 9:55am",       note: "Buy on bus",    status: "gray" },
-  { date: "20 Jul", route: "Furano → Sapporo",             detail: "Highway express · 15:40 → 18:24",   note: "Buy on day",    status: "gray" },
-  { date: "23 Jul", route: "Sapporo → Chitose",            detail: "JR rapid · ~35 min",                note: "Buy on day",    status: "gray" },
+  { date: "12 Jul", route: "Wakkanai airport → Moshiripa", detail: "Soya bus · ~39 min · cash",                        note: "No pre-book",  status: "gray",    gbp: null },
+  { date: "17 Jul", route: "Wakkanai → Asahikawa train",   detail: "13:01 → 16:45",                                    note: "Book 17 Jun!", status: "pending", gbp: null },
+  { date: "18 Jul", route: "Asahikawa → Asahidake",        detail: "Bus 66番 · 7:15am · 1,800¥ / £8.45 per adult",     note: "No pre-book",  status: "gray",    gbp: 8.45 },
+  { date: "19 Jul", route: "Asahikawa → Furano",           detail: "Lavender Train bus · 9:55am",                      note: "Buy on bus",   status: "gray",    gbp: null },
+  { date: "20 Jul", route: "Furano → Sapporo",             detail: "Highway express · 15:40 → 18:24 · 2,700¥ / £12.62 per adult", note: "Buy on day", status: "gray", gbp: 12.62 },
+  { date: "23 Jul", route: "Sapporo → Chitose",            detail: "JR rapid · ~35 min",                               note: "Buy on day",   status: "gray",    gbp: null },
 ];
 
 const STAYS = [
-  { dates: "9–12 Jul",  nights: 3, name: "Tokyo accommodation",   loc: "Tokyo",     cost: "—",              status: "urgent",    ref: "Not in your docs" },
-  { dates: "12–13 Jul", nights: 1, name: "Guest House Moshiripa", loc: "Wakkanai",  cost: "£69.96 (Booking.com)", status: "confirmed", ref: "Booking.com confirmation ✓", url: MOSHIRIPA_URL,
-    mapUrl: "https://www.google.com/maps/place/Guest+House+Moshiripa/@45.4192027,141.6756927,17z" },
-  { dates: "13–14 Jul", nights: 1, name: "Saito Inn さいとう旅館", loc: "Rishiri",   cost: "36,000¥ / £168.70", status: "confirmed", ref: "Leika contacted them directly · bikes & ferry pick-up arranged",
-    mapUrl: "https://www.google.com/maps/place/Saito+Inn/@45.244326,141.2193131,17z" },
-  { dates: "14–17 Jul", nights: 3, name: "Shimanoyado Rebunshiri", loc: "Rebun",    cost: "¥72,000 / £344",   status: "confirmed", ref: "Booking.com #6117.328.292 · PIN 0351 · +81 163 86 2477 · free cancel until 10 Jul", url: REBUNSHIRI_PDF,
-    mapUrl: "https://www.google.com/maps/place/Rebun+Shiri/@45.3019232,141.0469357,17z" },
-  { dates: "17–19 Jul", nights: 2, name: "Buddy House (緑ハイツ)", loc: "Asahikawa", cost: "¥33,835 / £159",   status: "confirmed", ref: "Booking.com #5278.868.395 · PIN 9824 · +81 166 99 0192 · non-refundable · check-in 16:00–23:00", url: BUDDY_HOUSE_PDF,
-    mapUrl: "https://www.google.com/maps/place/緑ハイツ/@43.7881767,142.3339025,17z" },
-  { dates: "19–20 Jul", nights: 1, name: "Hostel Tomar",          loc: "Furano",    cost: "6,900¥ / £32.30",  status: "confirmed", ref: "Honcho 2-27, Concierge Furano 3F · check-in 15:00–22:00", url: "https://secure.booking.com/confirmation.en-gb.html?aid=304142&label=gen173bo-10EgxjaGFuZ2VfZGF0ZXMoggI46AdIM1gDaFCIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGYAgSoAgG4AoC0stAGwAIB0gIkNmI1OGNhMzItMDE1MS00MmMxLWIwOTYtNjEwZjA3OWZlMTJi2AIB4AIB&auth_key=4kbojz0RkYW3Iwlh&source=change_dates",
-    mapUrl: "https://www.google.com/maps/place/Tomar+%26+Eversa/@43.3471364,142.388071,17z" },
-  { dates: "20–23 Jul", nights: 3, name: "Grand Hostel LDK",      loc: "Sapporo",   cost: "16,400¥ / £77",    status: "confirmed", ref: "Partner offer · paid", url: "https://secure.booking.com/tpi_confirmation.en-gb.html?label=gen173nr-10CAEoggI46AdIM1gEaFCIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4ApfhsdAGwAIB0gIkM2UwZWZjNDAtMzdkYi00ZGFhLWJkY2MtMTg0OWNjMDc5YWY12AIB4AIB&sid=65b31a614012a9a856133d0082479adc&aid=304142&ws_auth_key=MYLaeZPBNiEsg1gS",
-    mapUrl: "https://www.google.com/maps/place/GRAND+HOSTEL+LDK+SAPPORO/@43.0538407,141.3453946,17z" },
-  { dates: "23–24 Jul", nights: 1, name: "遊悠館",                 loc: "Chitose",   cost: "7,670¥ / £36",     status: "confirmed", ref: "Free cancellation", url: "https://secure.booking.com/confirmation.en-gb.html?label=gen173nr-10CAEoggI46AdIM1gEaFCIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4ApfhsdAGwAIB0gIkM2UwZWZjNDAtMzdkYi00ZGFhLWJkY2MtMTg0OWNjMDc5YWY12AIB4AIB&sid=65b31a614012a9a856133d0082479adc&aid=304142&auth_key=pOdhkljxz4xcZzYz&source=mytrips",
-    mapUrl: "https://www.google.com/maps/place/遊悠館/@42.822851,141.6441184,17z" },
-  { dates: "24–28 Jul", nights: 4, name: "Tokyo accommodation",   loc: "Tokyo",     cost: "—",              status: "urgent",    ref: "Not in your docs" },
+  { dates: "9–12 Jul",  nights: 3, name: "Tokyo accommodation",   loc: "Tokyo",     cost: "—",              status: "urgent",    ref: "Not in your docs", gbp: null },
+  { dates: "12–13 Jul", nights: 1, name: "Guest House Moshiripa", loc: "Wakkanai",  cost: "6,996¥ / £33", status: "confirmed", ref: "Booking.com #6413.112.610 · PIN 8709 · breakfast included", url: MOSHIRIPA_PDF, mapUrl: "https://www.google.com/maps/place/Guest+House+Moshiripa/@45.4192027,141.6756927,17z", gbp: 33 },
+  { dates: "13–14 Jul", nights: 1, name: "Saito Inn さいとう旅館", loc: "Rishiri",   cost: "36,000¥ / £168.70 (2 guests, £84.35 each)", status: "confirmed", ref: "Leika contacted them directly · bikes & ferry pick-up arranged", mapUrl: "https://www.google.com/maps/place/Saito+Inn/@45.244326,141.2193131,17z", gbp: 84.35 },
+  { dates: "14–17 Jul", nights: 3, name: "Shimanoyado Rebunshiri", loc: "Rebun",    cost: "72,000¥ / £344 (2 guests, £172 each)", status: "confirmed", ref: "Booking.com #6117.328.292 · PIN 0351 · +81 163 86 2477 · free cancel until 10 Jul", url: REBUNSHIRI_PDF, mapUrl: "https://www.google.com/maps/place/Rebun+Shiri/@45.3019232,141.0469357,17z", gbp: 172 },
+  { dates: "17–19 Jul", nights: 2, name: "Buddy House (緑ハイツ)", loc: "Asahikawa", cost: "33,835¥ / £159 (2 guests, £79.50 each)", status: "confirmed", ref: "Booking.com #5278.868.395 · PIN 9824 · +81 166 99 0192 · non-refundable · check-in 16:00–23:00", url: BUDDY_HOUSE_PDF, mapUrl: "https://www.google.com/maps/place/緑ハイツ/@43.7881767,142.3339025,17z", gbp: 79.50 },
+  { dates: "19–20 Jul", nights: 1, name: "Hostel Tomar",          loc: "Furano",    cost: "6,900¥ / £32",     status: "confirmed", ref: "Booking.com #5587.910.714 · PIN 9355 · Honcho 2-27, Concierge Furano 3F · check-in 15:00–22:00", url: HOSTEL_TOMAR_PDF, mapUrl: "https://www.google.com/maps/place/Tomar+%26+Eversa/@43.3471364,142.388071,17z", gbp: 32 },
+  { dates: "20–23 Jul", nights: 3, name: "Grand Hostel LDK",      loc: "Sapporo",   cost: "16,400¥ / £77.48", status: "confirmed", ref: "Booking #409930287671329438 · paid 20 Mar 2026", url: GRAND_HOSTEL_LDK_PDF, mapUrl: "https://www.google.com/maps/place/GRAND+HOSTEL+LDK+SAPPORO/@43.0538407,141.3453946,17z", gbp: 77.48 },
+  { dates: "23–24 Jul", nights: 1, name: "遊悠館",                 loc: "Chitose",   cost: "7,650¥ / £36",     status: "confirmed", ref: "Booking.com #5255.563.255 · PIN 7684 · free cancel until 21 Jul", url: YUYUKAN_PDF, mapUrl: "https://www.google.com/maps/place/遊悠館/@42.822851,141.6441184,17z", gbp: 36 },
+  { dates: "24–28 Jul", nights: 4, name: "Tokyo accommodation",   loc: "Tokyo",     cost: "—",                status: "urgent",    ref: "Not in your docs", gbp: null },
 ];
 
 const GEORGE = [

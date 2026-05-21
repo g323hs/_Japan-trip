@@ -6,7 +6,8 @@ const { URGENT, DAYS, FLIGHTS, FERRIES, GROUND, STAYS, GEORGE, PHASES, TRIP } = 
 // ---- Countdown ----
 function useDaysToGo() {
   return useMemo(() => {
-    const today = new Date(TRIP.today);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     const start = new Date(TRIP.start);
     return Math.max(0, Math.ceil((start - today) / 86400000));
   }, []);
@@ -202,13 +203,19 @@ function Tabs({ tab, setTab }) {
     { id: "days",      label: "Days" },
     { id: "transport", label: "Transport" },
     { id: "stays",     label: "Stays" },
-    { id: "money",     label: "What I owe Leika" },
+    { id: "money",     label: "General costs" },
   ];
+  const isMobile = useIsMobile();
+  const bleed = isMobile ? 14 : 24;
   return (
     <div style={{
       display: "flex", gap: 4, borderBottom: "1px solid #e2dfd6",
       marginBottom: 24, overflowX: "auto",
       fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
+      position: "sticky", top: 0, zIndex: 50,
+      background: "#f4f1e8",
+      marginLeft: -bleed, marginRight: -bleed,
+      paddingLeft: bleed, paddingRight: bleed,
     }}>
       {TABS.map(t => (
         <button key={t.id} onClick={() => setTab(t.id)} style={{
@@ -318,12 +325,16 @@ function TransportTab() {
           const arrow = f.route.split(" → ");
           const routeMap = arrow.length === 2 ? <MapLink from={arrow[0]} to={arrow[1]} mode="transit" label="Route" /> : null;
           const last = i === FERRIES.length - 1;
+          const bookingLinks = (
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              {f.url && <BookingLink url={f.url} label={f.urlLabel || "View booking"} />}
+              {f.confUrl && <BookingLink url={f.confUrl} label="Confirmation" />}
+            </div>
+          );
           if (isMobile) {
             return (
               <MobileRow key={i} last={last} status={f.status} date={f.date} route={f.route}
-                routeMap={routeMap}
-                detail={f.detail}
-                booking={f.url && <BookingLink url={f.url} label={f.urlLabel || "View booking"} />}
+                routeMap={routeMap} detail={f.detail} booking={bookingLinks}
                 badge={<Badge status={f.status}>{f.note}</Badge>}
               />
             );
@@ -332,12 +343,12 @@ function TransportTab() {
           <Row key={i} last={last} status={f.status}>
             <span style={{ fontSize: 11.5, color: "#a8a298", minWidth: 54, flexShrink: 0, fontFamily: "'IBM Plex Sans', system-ui, sans-serif" }}>{f.date}</span>
             <span style={{ fontSize: 14.5, color: "#1f1d18", flex: 1.2, fontFamily: "'Instrument Serif', Georgia, serif", display: "flex", alignItems: "baseline", gap: 6 }}>
-              <span>{f.route}</span>
-              {routeMap}
+              <span>{f.route}</span>{routeMap}
             </span>
             <span style={{ fontSize: 12.5, color: "#6f6a5d", flex: 1.5, fontFamily: "'IBM Plex Sans', system-ui, sans-serif" }}>{f.detail}</span>
-            <div style={{ width: 140, flexShrink: 0, display: "flex", justifyContent: "center" }}>
+            <div style={{ width: 180, flexShrink: 0, display: "flex", gap: 6, justifyContent: "center" }}>
               {f.url && <BookingLink url={f.url} label={f.urlLabel || "View booking"} />}
+              {f.confUrl && <BookingLink url={f.confUrl} label="Confirmation" />}
             </div>
             <div style={{ width: 96, flexShrink: 0, display: "flex", justifyContent: "flex-end" }}>
               <Badge status={f.status}>{f.note}</Badge>
@@ -357,8 +368,7 @@ function TransportTab() {
           if (isMobile) {
             return (
               <MobileRow key={i} last={last} status={g.status} date={g.date} route={g.route}
-                routeMap={routeMap}
-                detail={g.detail}
+                routeMap={routeMap} detail={g.detail}
                 badge={<Badge status={statusForBadge}>{g.note}</Badge>}
               />
             );
@@ -368,12 +378,11 @@ function TransportTab() {
             <span style={{ fontSize: 11.5, color: "#a8a298", minWidth: 54, flexShrink: 0, fontFamily: "'IBM Plex Sans', system-ui, sans-serif" }}>{g.date}</span>
             <div style={{ flex: 1.2 }}>
               <div style={{ fontSize: 14.5, color: "#1f1d18", fontFamily: "'Instrument Serif', Georgia, serif", display: "flex", alignItems: "baseline", gap: 6 }}>
-                <span>{g.route}</span>
-                {routeMap}
+                <span>{g.route}</span>{routeMap}
               </div>
             </div>
             <span style={{ fontSize: 12.5, color: "#6f6a5d", flex: 1.5, fontFamily: "'IBM Plex Sans', system-ui, sans-serif" }}>{g.detail}</span>
-            <div style={{ width: 140, flexShrink: 0 }} />
+            <div style={{ width: 180, flexShrink: 0 }} />
             <div style={{ width: 96, flexShrink: 0, display: "flex", justifyContent: "flex-end" }}>
               <Badge status={statusForBadge}>{g.note}</Badge>
             </div>
@@ -381,6 +390,24 @@ function TransportTab() {
           );
         })}
       </div>
+      {/* Transport total */}
+      {(() => {
+        const known = [...FLIGHTS, ...FERRIES, ...GROUND].reduce((s, x) => s + (x.gbp || 0), 0);
+        const tbcCount = [...FLIGHTS, ...FERRIES, ...GROUND].filter(x => x.gbp == null).length;
+        return (
+          <div style={{
+            marginTop: 16, background: "white", border: "1px solid #e2dfd6", borderRadius: 14,
+            padding: "16px 20px", display: "flex", alignItems: "baseline", justifyContent: "space-between",
+            fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
+          }}>
+            <div>
+              <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#a8a298", marginBottom: 4 }}>Transport total (known)</div>
+              <div style={{ fontSize: 11.5, color: "#8a8478" }}>{tbcCount} line{tbcCount !== 1 ? "s" : ""} still TBC (Peach return, train, buses)</div>
+            </div>
+            <div style={{ fontFamily: "'Instrument Serif', Georgia, serif", fontSize: 32, color: "#1f1d18" }}>£{known.toFixed(2)}</div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
@@ -476,6 +503,23 @@ function StaysTab() {
           );
         })}
       </div>
+      {(() => {
+        const known = STAYS.reduce((s, x) => s + (x.gbp || 0), 0);
+        const tbcNights = STAYS.filter(x => x.gbp == null).reduce((s, x) => s + x.nights, 0);
+        return (
+          <div style={{
+            marginTop: 16, background: "white", border: "1px solid #e2dfd6", borderRadius: 14,
+            padding: "16px 20px", display: "flex", alignItems: "baseline", justifyContent: "space-between",
+            fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
+          }}>
+            <div>
+              <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#a8a298", marginBottom: 4 }}>Accommodation total (known)</div>
+              <div style={{ fontSize: 11.5, color: "#8a8478" }}>{tbcNights} nights still TBC (Tokyo)</div>
+            </div>
+            <div style={{ fontFamily: "'Instrument Serif', Georgia, serif", fontSize: 32, color: "#1f1d18" }}>£{known.toFixed(2)}</div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
@@ -655,7 +699,15 @@ function App() {
         <ActionPanel />
         <Tabs tab={tab} setTab={setTab} />
         {tab === "map" && <TripMap key="map" />}
-        {tab === "days" && <DaysTab />}
+        {tab === "days" && (
+          <div style={{
+            height: "calc(100vh - 260px)", minHeight: 400,
+            overflowY: "auto", borderRadius: 10,
+            paddingRight: 4,
+          }}>
+            <DaysTab />
+          </div>
+        )}
         {tab === "transport" && <TransportTab />}
         {tab === "stays" && <StaysTab />}
         {tab === "money" && <MoneyTab />}

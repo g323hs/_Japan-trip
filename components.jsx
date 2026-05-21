@@ -124,9 +124,10 @@ const TIMELINE_LABELS = {
   activity: "Activity", food: "Food", stay: "Stay", transit: "Transit",
 };
 
-function DayTimeline({ schedule, highlightKey }) {
+function DayTimeline({ schedule, highlightKey, loc, onBlockClick }) {
   if (!schedule || !schedule.length) return null;
   const isMobile = useIsMobile();
+  const [hoveredBlock, setHoveredBlock] = React.useState(null);
   const labelWidth = isMobile ? 50 : 60;
   const padLeft = isMobile ? 56 : 70;
   const toMin = (t) => {
@@ -249,24 +250,32 @@ function DayTimeline({ schedule, highlightKey }) {
               ? it.kind === "stay"
               : it.label.toLowerCase().includes(highlightKey.toLowerCase())
           );
+          const canFocus = !!onBlockClick && it.kind !== "transit";
+          const hovered = hoveredBlock === i;
           return (
-            <div key={i} style={{
-              position: "absolute", left: padLeft, right: 8,
-              top, height,
-              background: compressed
-                ? `repeating-linear-gradient(135deg, ${color}1a 0 8px, ${color}24 8px 16px)`
-                : bg,
-              borderLeft: `3px solid ${color}`,
-              borderRadius: 5,
-              padding: tight ? "3px 10px" : "6px 12px",
-              outline: isHighlighted ? `2px solid ${color}` : "none",
-              outlineOffset: 1,
-              boxShadow: isHighlighted ? `0 0 0 4px ${color}30` : "none",
-              transition: "outline 0.2s, box-shadow 0.2s",
-              overflow: "hidden",
-              display: "flex", flexDirection: "column",
-              justifyContent: "center", gap: 1,
-            }}>
+            <div key={i}
+              onClick={canFocus ? () => onBlockClick(it) : undefined}
+              onMouseEnter={() => canFocus && setHoveredBlock(i)}
+              onMouseLeave={() => setHoveredBlock(null)}
+              style={{
+                position: "absolute", left: padLeft, right: 8,
+                top, height,
+                background: compressed
+                  ? `repeating-linear-gradient(135deg, ${color}1a 0 8px, ${color}24 8px 16px)`
+                  : bg,
+                borderLeft: `3px solid ${color}`,
+                borderRadius: 5,
+                padding: tight ? "3px 10px" : "6px 12px",
+                outline: isHighlighted ? `2px solid ${color}` : "none",
+                outlineOffset: 1,
+                boxShadow: isHighlighted ? `0 0 0 4px ${color}30` : "none",
+                transition: "outline 0.2s, box-shadow 0.2s, filter 0.15s",
+                filter: hovered ? "brightness(0.93)" : "none",
+                cursor: canFocus ? "pointer" : "default",
+                overflow: "hidden",
+                display: "flex", flexDirection: "column",
+                justifyContent: "center", gap: 1,
+              }}>
               <div style={{
                 fontSize: isMobile ? 11.5 : 12.5, fontWeight: 700, color,
                 whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
@@ -468,10 +477,14 @@ function DayCard({ day, defaultOpen = false }) {
   const [showDayGuide, setShowDayGuide] = React.useState(false);
   const [highlightKey, setHighlightKey] = React.useState(null);
   const highlightTimer = React.useRef(null);
+  const mapFocusRef = React.useRef(null);
   const handleMapItemClick = React.useCallback((item) => {
     clearTimeout(highlightTimer.current);
     setHighlightKey(item.type === "accom" ? "_stay_" : item.label);
     highlightTimer.current = setTimeout(() => setHighlightKey(null), 3500);
+  }, []);
+  const handleBlockClick = React.useCallback((it) => {
+    mapFocusRef.current?.focus(it);
   }, []);
   const statusLabel = {
     confirmed: "Confirmed",
@@ -529,7 +542,7 @@ function DayCard({ day, defaultOpen = false }) {
       {open && hasMore && (
         <div style={{ borderTop: "1px solid #f0ede4", display: showMap && !isNarrow ? "grid" : "block", gridTemplateColumns: "1fr 1fr", alignItems: "stretch" }}>
           <div style={{ padding: isMobile ? "14px 14px 16px" : "16px 18px 18px 18px", background: "#fbfaf5" }}>
-          {day.schedule && day.schedule.length > 0 && <DayTimeline schedule={day.schedule} highlightKey={highlightKey} />}
+          {day.schedule && day.schedule.length > 0 && <DayTimeline schedule={day.schedule} highlightKey={highlightKey} loc={day.loc} onBlockClick={showMap ? handleBlockClick : undefined} />}
           {day.bookings && day.bookings.length > 0 && (
             <div style={{ marginBottom: 16 }}>
               <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "#a8a298", marginBottom: 8, fontFamily: "'IBM Plex Sans', system-ui, sans-serif" }}>Bookings for today</div>
@@ -631,7 +644,7 @@ function DayCard({ day, defaultOpen = false }) {
               borderRadius: isNarrow ? "0 0 14px 14px" : "0 0 14px 0",
               height: isNarrow ? 260 : undefined,
             }}>
-              <DayMapComp mapData={mapData} onItemClick={handleMapItemClick} />
+              <DayMapComp mapData={mapData} onItemClick={handleMapItemClick} focusRef={mapFocusRef} />
             </div>
           )}
         </div>
@@ -645,166 +658,185 @@ function BookingLink({ url, label = "View booking" }) {
   const isLocal = !/^https?:\/\//.test(url);
   const isPdf = isLocal && /\.pdf$/i.test(url);
   const isImg = isLocal && /\.(png|jpe?g|gif|webp|svg)$/i.test(url);
+  const isPopup = isPdf || isImg;
   const [showMedia, setShowMedia] = React.useState(false);
-  const onClick = isLocal ? async (e) => {
-    e.preventDefault();
-    if (isPdf || isImg) {
-      setShowMedia(true);
-      return;
-    }
-    try {
-      const res = await fetch(url);
-      const blob = await res.blob();
-      const blobUrl = URL.createObjectURL(blob);
-      window.open(blobUrl, "_blank", "noopener");
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
-    } catch (err) {
-      console.error("Couldn't open file:", err);
-      alert("Couldn't open the file — please try again.");
-    }
-  } : undefined;
+
+  const colors = isPopup
+    ? { color: "#3a5a8c", bg: "#eef0f8", border: "#c8d4e8", hover: "#dce2f0" }
+    : { color: "#2d6a52", bg: "#eef4ee", border: "#cfe0d3", hover: "#dfeae2" };
+  const icon = isPdf ? "📄" : isImg ? "🖼" : "↗";
+
   return (
     <React.Fragment>
-      <a href={url} target="_blank" rel="noopener noreferrer" onClick={onClick} style={{
-        display: "inline-flex", alignItems: "center", gap: 5,
-        fontSize: 11.5, fontWeight: 600,
-        color: "#2d6a52", textDecoration: "none",
-        padding: "5px 10px", borderRadius: 7,
-        background: "#eef4ee", border: "1px solid #cfe0d3",
-        fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
-        letterSpacing: "0.01em", whiteSpace: "nowrap",
-        transition: "background 0.15s",
-      }}
-      onMouseEnter={e => e.currentTarget.style.background = "#dfeae2"}
-      onMouseLeave={e => e.currentTarget.style.background = "#eef4ee"}
+      <a
+        href={url}
+        title={isPdf ? `Open PDF: ${label}` : isImg ? `View image: ${label}` : `Open in new tab: ${label}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={isPopup ? (e) => { e.preventDefault(); setShowMedia(true); } : undefined}
+        style={{
+          display: "inline-flex", alignItems: "center", gap: 5,
+          fontSize: 11.5, fontWeight: 600, color: colors.color, textDecoration: "none",
+          padding: "5px 10px", borderRadius: 7, background: colors.bg,
+          border: `1px solid ${colors.border}`,
+          fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
+          letterSpacing: "0.01em", whiteSpace: "nowrap", transition: "background 0.15s",
+        }}
+        onMouseEnter={e => e.currentTarget.style.background = colors.hover}
+        onMouseLeave={e => e.currentTarget.style.background = colors.bg}
       >
-        <span style={{ fontSize: 10 }}>↗</span>{label}
+        <span style={{ fontSize: isPdf || isImg ? 13 : 10 }}>{icon}</span>{label}
       </a>
       {showMedia && <MediaModal url={url} label={label} kind={isImg ? "image" : "pdf"} onClose={() => setShowMedia(false)} />}
     </React.Fragment>
   );
 }
 
+function PDFViewer({ blobUrl }) {
+  const containerRef = React.useRef(null);
+  const [pages, setPages] = React.useState([]);
+  const [err, setErr] = React.useState(null);
+
+  React.useEffect(() => {
+    if (!window.pdfjsLib) { setErr("PDF.js failed to load — check your internet connection."); return; }
+    let cancelled = false;
+    pdfjsLib.getDocument(blobUrl).promise.then(pdf => {
+      if (cancelled) return;
+      const ps = [];
+      for (let i = 1; i <= pdf.numPages; i++) ps.push(pdf.getPage(i));
+      return Promise.all(ps);
+    }).then(resolved => {
+      if (!cancelled && resolved) setPages(resolved);
+    }).catch(e => { if (!cancelled) setErr(String(e.message || e)); });
+    return () => { cancelled = true; };
+  }, [blobUrl]);
+
+  React.useEffect(() => {
+    if (!pages.length || !containerRef.current) return;
+    const width = containerRef.current.clientWidth - 40;
+    pages.forEach((page, i) => {
+      const canvas = containerRef.current.querySelector(`[data-page="${i}"]`);
+      if (!canvas) return;
+      const base = page.getViewport({ scale: 1 });
+      const scale = Math.min(2, width / base.width);
+      const vp = page.getViewport({ scale });
+      canvas.width = vp.width;
+      canvas.height = vp.height;
+      page.render({ canvasContext: canvas.getContext("2d"), viewport: vp });
+    });
+  }, [pages]);
+
+  if (err) return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", flexDirection: "column", gap: 8, color: "#f4f1e8", padding: 24, textAlign: "center" }}>
+      <div style={{ fontSize: 14 }}>Couldn't render PDF.</div>
+      <div style={{ fontSize: 12, color: "#a8a298" }}>{err}</div>
+    </div>
+  );
+  if (!pages.length) return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "#a8a298", fontSize: 13 }}>Rendering…</div>
+  );
+  return (
+    <div ref={containerRef} style={{ overflowY: "auto", height: "100%", display: "flex", flexDirection: "column", alignItems: "center", gap: 12, padding: 20, background: "#2a2823" }}>
+      {pages.map((_, i) => (
+        <canvas key={i} data-page={i} style={{ maxWidth: "100%", boxShadow: "0 2px 16px rgba(0,0,0,0.5)", borderRadius: 2 }} />
+      ))}
+    </div>
+  );
+}
+
 function MediaModal({ url, label, kind, onClose }) {
   const [blobUrl, setBlobUrl] = React.useState(null);
   const [err, setErr] = React.useState(null);
+
   React.useEffect(() => {
+    // Images load directly without fetch; PDFs need a blob URL for Safari
+    if (kind === "image") { setBlobUrl(url); return; }
     let cancelled = false;
-    let createdUrl = null;
-    (async () => {
-      try {
-        const res = await fetch(url);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const blob = await res.blob();
+    let created = null;
+    fetch(url)
+      .then(r => { if (!r.ok) throw new Error(`HTTP ${r.status} — check the file exists`); return r.blob(); })
+      .then(blob => {
         if (cancelled) return;
-        createdUrl = URL.createObjectURL(blob);
-        setBlobUrl(createdUrl);
-      } catch (e) {
-        if (!cancelled) setErr(String(e.message || e));
-      }
-    })();
+        created = URL.createObjectURL(blob);
+        setBlobUrl(created);
+      })
+      .catch(e => { if (!cancelled) setErr(String(e.message || e)); });
     return () => {
       cancelled = true;
-      if (createdUrl) URL.revokeObjectURL(createdUrl);
+      if (created && kind !== "image") URL.revokeObjectURL(created);
     };
-  }, [url]);
+  }, [url, kind]);
 
   React.useEffect(() => {
     const onKey = (e) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = "";
-    };
+    return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = ""; };
   }, [onClose]);
-
-  const download = () => {
-    if (!blobUrl) return;
-    const a = document.createElement("a");
-    a.href = blobUrl;
-    a.download = url.split("/").pop() || (kind === "image" ? "image.png" : "booking.pdf");
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  };
 
   return (
     <div onClick={onClose} style={{
       position: "fixed", inset: 0, zIndex: 1000,
-      background: "rgba(28,46,37,0.78)",
-      backdropFilter: "blur(4px)",
+      background: "rgba(28,46,37,0.78)", backdropFilter: "blur(4px)",
       display: "flex", alignItems: "center", justifyContent: "center",
-      padding: "40px 24px",
-      fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
+      padding: "40px 24px", fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
     }}>
       <div onClick={e => e.stopPropagation()} style={{
         background: "#fbfaf5", borderRadius: 14,
         width: kind === "image" ? "min(1200px, 100%)" : "min(960px, 100%)",
-        height: "100%",
-        display: "flex", flexDirection: "column",
-        boxShadow: "0 24px 60px -20px rgba(0,0,0,0.5)",
-        overflow: "hidden",
+        height: "100%", display: "flex", flexDirection: "column",
+        boxShadow: "0 24px 60px -20px rgba(0,0,0,0.5)", overflow: "hidden",
       }}>
         <div style={{
           display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: "12px 18px", borderBottom: "1px solid #e2dfd6",
-          background: "white",
+          padding: "12px 18px", borderBottom: "1px solid #e2dfd6", background: "white", flexShrink: 0,
         }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{
-              fontSize: 10.5, fontWeight: 700, letterSpacing: "0.16em",
-              color: "#a8a298", textTransform: "uppercase",
-            }}>{kind === "image" ? "Reference" : "Booking"}</span>
+            <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: "0.16em", color: "#a8a298", textTransform: "uppercase" }}>
+              {kind === "image" ? "Image" : "PDF"}
+            </span>
             <span style={{ fontSize: 15, color: "#1f1d18", fontWeight: 500 }}>{label}</span>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={download} disabled={!blobUrl} style={{
-              padding: "6px 12px", borderRadius: 7,
-              background: blobUrl ? "#eef4ee" : "#f3f1ec",
-              color: blobUrl ? "#27583e" : "#a8a298",
-              border: `1px solid ${blobUrl ? "#cfe0d3" : "#e2dfd6"}`,
-              fontSize: 12, fontWeight: 600, cursor: blobUrl ? "pointer" : "default",
-            }}>Download</button>
+            {blobUrl && (
+              <a href={blobUrl} download={url.split("/").pop()} style={{
+                padding: "6px 12px", borderRadius: 7, background: "#eef4ee", color: "#27583e",
+                border: "1px solid #cfe0d3", fontSize: 12, fontWeight: 600,
+                textDecoration: "none", display: "inline-flex", alignItems: "center",
+              }}>Download</a>
+            )}
             <button onClick={onClose} style={{
-              padding: "6px 12px", borderRadius: 7,
-              background: "white", color: "#3a3833",
-              border: "1px solid #e2dfd6", fontSize: 12, fontWeight: 600,
-              cursor: "pointer",
+              padding: "6px 12px", borderRadius: 7, background: "white", color: "#3a3833",
+              border: "1px solid #e2dfd6", fontSize: 12, fontWeight: 600, cursor: "pointer",
             }}>Close ✕</button>
           </div>
         </div>
-        <div style={{ flex: 1, background: kind === "image" ? "#f4f1e8" : "#2a2823", position: "relative" }}>
+        <div style={{ flex: 1, background: kind === "image" ? "#f4f1e8" : "#2a2823", position: "relative", minHeight: 0 }}>
           {err && (
             <div style={{
-              position: "absolute", inset: 0, display: "flex",
-              alignItems: "center", justifyContent: "center",
-              color: kind === "image" ? "#3a3833" : "#f4f1e8", flexDirection: "column", gap: 10, padding: 24,
-              textAlign: "center",
+              position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
+              flexDirection: "column", gap: 10, padding: 24, textAlign: "center",
+              color: kind === "image" ? "#3a3833" : "#f4f1e8",
             }}>
-              <div style={{ fontSize: 14 }}>Couldn't load.</div>
+              <div style={{ fontSize: 14 }}>Couldn't load file.</div>
               <div style={{ fontSize: 12, color: "#a8a298" }}>{err}</div>
+              <div style={{ fontSize: 11, color: "#a8a298", marginTop: 4 }}>Make sure you're opening the page via a local server, not directly as a file.</div>
             </div>
           )}
           {!err && !blobUrl && (
-            <div style={{
-              position: "absolute", inset: 0, display: "flex",
-              alignItems: "center", justifyContent: "center",
-              color: "#a8a298", fontSize: 13,
-            }}>Loading…</div>
+            <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", color: "#a8a298", fontSize: 13 }}>
+              Loading…
+            </div>
           )}
           {blobUrl && kind === "image" && (
             <div style={{ width: "100%", height: "100%", overflow: "auto", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-              <img src={blobUrl} alt={label} style={{ maxWidth: "100%", maxHeight: "100%", height: "auto", boxShadow: "0 4px 18px -6px rgba(0,0,0,0.25)", borderRadius: 6, background: "white" }} />
+              <img src={blobUrl} alt={label}
+                onError={() => setErr("Image failed to load")}
+                style={{ maxWidth: "100%", maxHeight: "100%", height: "auto", boxShadow: "0 4px 18px -6px rgba(0,0,0,0.25)", borderRadius: 6, background: "white" }}
+              />
             </div>
           )}
-          {blobUrl && kind === "pdf" && (
-            <embed
-              src={blobUrl}
-              type="application/pdf"
-              style={{ width: "100%", height: "100%", border: "none" }}
-            />
-          )}
+          {blobUrl && kind === "pdf" && <PDFViewer blobUrl={blobUrl} />}
         </div>
       </div>
     </div>
@@ -813,6 +845,6 @@ function MediaModal({ url, label, kind, onClose }) {
 
 Object.assign(window, {
   STATUS_COLORS, MODE_COLORS, MODE_ICONS, TIMELINE_COLORS, TIMELINE_LABELS,
-  Badge, SecLabel, TransportLine, DayCard, DayTimeline, BookingLink, MediaModal, MapLink, GuidePopup, DayGuide, RouteGuideButton,
+  Badge, SecLabel, TransportLine, DayCard, DayTimeline, BookingLink, MediaModal, PDFViewer, MapLink, GuidePopup, DayGuide, RouteGuideButton,
   mapsSearchUrl, mapsDirectionsUrl, useIsMobile,
 });

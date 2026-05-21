@@ -206,11 +206,17 @@ function TripMap() {
   );
 }
 
-function DayMap({ mapData, onItemClick }) {
+function DayMap({ mapData, onItemClick, focusRef }) {
   const containerRef = React.useRef(null);
   const mapRef = React.useRef(null);
   const onItemClickRef = React.useRef(onItemClick);
   React.useEffect(() => { onItemClickRef.current = onItemClick; }, [onItemClick]);
+
+  // Marker/line storage for external focus control
+  const accomMarkerRef   = React.useRef(null);
+  const poiMarkersRef    = React.useRef({});  // name → { marker, lat, lng }
+  const routeMarkersRef  = React.useRef({});  // label → { marker, lat, lng }
+  const routeSegmentsRef = React.useRef({});  // toLlabel → { line, midLat, midLng, bounds }
 
   React.useEffect(() => {
     if (!mapData) return;
@@ -236,6 +242,10 @@ function DayMap({ mapData, onItemClick }) {
       }).addTo(map);
 
       const allPoints = [];
+      accomMarkerRef.current = null;
+      poiMarkersRef.current = {};
+      routeMarkersRef.current = {};
+      routeSegmentsRef.current = {};
 
       // Route segments + waypoint dots
       if (mapData.route && mapData.route.length > 1) {
@@ -243,17 +253,25 @@ function DayMap({ mapData, onItemClick }) {
           const from = mapData.route[i - 1];
           const to   = mapData.route[i];
           const s = ROUTE_STYLES[to.mode] || { color: "#8a8478", weight: 2.5, dashArray: null, opacity: 0.85 };
-          L.polyline([[from.lat, from.lng], [to.lat, to.lng]], {
+          const line = L.polyline([[from.lat, from.lng], [to.lat, to.lng]], {
             color: s.color, weight: s.weight,
             dashArray: s.dashArray || undefined, opacity: s.opacity,
           }).addTo(map).bindTooltip(`${from.label} → ${to.label}`, { sticky: true, direction: "top" });
+          line.on("click", () => onItemClickRef.current?.({ type: "route-line", label: to.label }));
+          routeSegmentsRef.current[to.label] = {
+            line,
+            midLat: (from.lat + to.lat) / 2,
+            midLng: (from.lng + to.lng) / 2,
+            bounds: L.latLngBounds([[from.lat, from.lng], [to.lat, to.lng]]),
+          };
           addRouteArrow(L, map, [from.lat, from.lng], [to.lat, to.lng], s.color);
         }
         mapData.route.forEach(pt => {
-          L.circleMarker([pt.lat, pt.lng], {
+          const m = L.circleMarker([pt.lat, pt.lng], {
             radius: 5, color: "white", weight: 2, fillColor: "#5b574e", fillOpacity: 0.9,
           }).addTo(map).bindTooltip(pt.label, { direction: "top" })
             .on("click", () => onItemClickRef.current?.({ type: "route", label: pt.label }));
+          routeMarkersRef.current[pt.label] = { marker: m, lat: pt.lat, lng: pt.lng };
           allPoints.push([pt.lat, pt.lng]);
         });
       }
@@ -265,17 +283,19 @@ function DayMap({ mapData, onItemClick }) {
           html: `<div style="width:32px;height:32px;border-radius:50%;background:#c4502f;border:2.5px solid white;box-shadow:0 2px 8px rgba(40,30,15,0.4);display:flex;align-items:center;justify-content:center;font-size:15px;color:white;line-height:1;">♥</div>`,
           className: "", iconSize: [32, 32], iconAnchor: [16, 16], popupAnchor: [0, -20],
         });
-        L.marker([lat, lng], { icon }).addTo(map).bindTooltip(name, { direction: "top" })
+        const m = L.marker([lat, lng], { icon }).addTo(map).bindTooltip(name, { direction: "top" })
           .on("click", () => onItemClickRef.current?.({ type: "accom", label: name }));
+        accomMarkerRef.current = { marker: m, lat, lng };
         allPoints.push([lat, lng]);
       }
 
       // Amber dots for POIs
       (mapData.pois || []).forEach(poi => {
-        L.circleMarker([poi.lat, poi.lng], {
+        const m = L.circleMarker([poi.lat, poi.lng], {
           radius: 7, color: "white", weight: 2, fillColor: "#c69112", fillOpacity: 0.85,
         }).addTo(map).bindTooltip(poi.name, { direction: "top" })
           .on("click", () => onItemClickRef.current?.({ type: "poi", label: poi.name }));
+        poiMarkersRef.current[poi.name] = { marker: m, lat: poi.lat, lng: poi.lng };
         allPoints.push([poi.lat, poi.lng]);
       });
 
@@ -283,6 +303,46 @@ function DayMap({ mapData, onItemClick }) {
         map.fitBounds(L.latLngBounds(allPoints), { padding: [28, 28] });
       } else if (allPoints.length === 1) {
         map.setView(allPoints[0], 12);
+      }
+
+      // Expose focus(scheduleItem) for timeline → map highlighting
+      if (focusRef) {
+        const flyTo = (entry) => {
+          if (!entry || !mapRef.current) return;
+          mapRef.current.flyTo([entry.lat, entry.lng], 14, { duration: 0.6 });
+          setTimeout(() => { try { entry.marker.openTooltip(); } catch (_) {} }, 650);
+        };
+        const TRANSPORT = new Set(["bus","train","ferry","plane","bike","walk","cable","car"]);
+        focusRef.current = {
+          focus: (it) => {
+            // Stay → accommodation pin
+            if (it.kind === "stay" && accomMarkerRef.current) {
+              flyTo(accomMarkerRef.current);
+              return;
+            }
+            // Transport → fly to the connecting line segment
+            if (TRANSPORT.has(it.kind)) {
+              const arrowIdx = it.label.indexOf(" → ");
+              const dest = (arrowIdx >= 0 ? it.label.slice(arrowIdx + 3) : it.label).trim().toLowerCase();
+              const hit = Object.entries(routeSegmentsRef.current).find(([k]) =>
+                k.toLowerCase().includes(dest) || dest.includes(k.toLowerCase())
+              );
+              if (hit) {
+                const { line, midLat, midLng, bounds } = hit[1];
+                mapRef.current.flyToBounds(bounds, { padding: [60, 60], duration: 0.7 });
+                setTimeout(() => { try { line.openTooltip([midLat, midLng]); } catch (_) {} }, 750);
+                return;
+              }
+            }
+            // Activity / food → closest POI name match
+            const lbl = it.label.toLowerCase();
+            const hit = Object.entries(poiMarkersRef.current).find(([name]) => {
+              const n = name.toLowerCase();
+              return lbl.includes(n.split(" ")[0]) || n.includes(lbl.split(" ")[0]);
+            });
+            if (hit) flyTo(hit[1]);
+          },
+        };
       }
     }
 
@@ -296,6 +356,11 @@ function DayMap({ mapData, onItemClick }) {
 
     return () => {
       if (mapRef.current) { mapRef.current.remove(); mapRef.current = null; }
+      if (focusRef) focusRef.current = null;
+      routeSegmentsRef.current = {};
+      accomMarkerRef.current = null;
+      poiMarkersRef.current = {};
+      routeMarkersRef.current = {};
     };
   }, [mapData]);
 
