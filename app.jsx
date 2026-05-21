@@ -452,7 +452,10 @@ function StaysTab() {
                 </div>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginTop: 2, flexWrap: "wrap" }}>
                   <span style={{ fontSize: 13, color: "#3a3833", fontFamily: "'IBM Plex Sans', system-ui, sans-serif" }}>{s.cost}</span>
-                  {s.url && <BookingLink url={s.url} label="View booking" />}
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                    {s.url && <BookingLink url={s.url} label="Confirmation" />}
+                    {s.bookingUrl && <BookingLink url={s.bookingUrl} label="Booking page" />}
+                  </div>
                 </div>
               </div>
             );
@@ -491,8 +494,9 @@ function StaysTab() {
                 fontSize: 12.5, color: "#3a3833", width: 170, flexShrink: 0, textAlign: "right",
                 fontFamily: "'IBM Plex Sans', system-ui, sans-serif", lineHeight: 1.4,
               }}>{s.cost}</span>
-              <div style={{ width: 128, flexShrink: 0, display: "flex", justifyContent: "center" }}>
-                {s.url && <BookingLink url={s.url} label="View booking" />}
+              <div style={{ width: 210, flexShrink: 0, display: "flex", gap: 6, justifyContent: "center", flexWrap: "wrap" }}>
+                {s.url && <BookingLink url={s.url} label="Confirmation" />}
+                {s.bookingUrl && <BookingLink url={s.bookingUrl} label="Booking page" />}
               </div>
               <div style={{ width: 110, flexShrink: 0, display: "flex", justifyContent: "flex-end" }}>
                 <Badge status={s.status} size="md">
@@ -547,6 +551,40 @@ function Stat({ label, value, sub, accent = "#1f1d18" }) {
   );
 }
 
+function CostAccordion({ title, icon, known, tbcNote, children, color = "#2d6a52", defaultOpen = false }) {
+  const [open, setOpen] = React.useState(defaultOpen);
+  return (
+    <div style={{ background: "white", border: "1px solid #e2dfd6", borderRadius: 14, overflow: "hidden", marginBottom: 10 }}>
+      <button onClick={() => setOpen(o => !o)} style={{
+        width: "100%", display: "flex", alignItems: "center", gap: 12,
+        padding: "14px 18px", background: "none", border: "none", cursor: "pointer",
+        textAlign: "left",
+      }}>
+        <span style={{
+          width: 32, height: 32, borderRadius: 8, background: `${color}18`,
+          color, display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 16, flexShrink: 0,
+        }}>{icon}</span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#1f1d18", fontFamily: "'IBM Plex Sans', system-ui, sans-serif" }}>{title}</div>
+          {tbcNote && <div style={{ fontSize: 11, color: "#a8a298", marginTop: 1, fontFamily: "'IBM Plex Sans', system-ui, sans-serif" }}>{tbcNote}</div>}
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
+          <div style={{ fontFamily: "'Instrument Serif', Georgia, serif", fontSize: 22, color: known > 0 ? "#1f1d18" : "#a8a298" }}>
+            {known > 0 ? `£${known.toFixed(2)}` : "TBC"}
+          </div>
+          <span style={{ fontSize: 13, color: "#a8a298", width: 16, textAlign: "center" }}>{open ? "−" : "+"}</span>
+        </div>
+      </button>
+      {open && (
+        <div style={{ borderTop: "1px solid #f0ede4" }}>
+          {children}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function MoneyTab() {
   const isMobile = useIsMobile();
   const unpaidItems = GEORGE.filter(g => g.status !== "paid");
@@ -554,12 +592,25 @@ function MoneyTab() {
   const totalOwed = unpaidItems.reduce((s, g) => s + g.gbp, 0);
   const totalYen = unpaidItems.reduce((s, g) => s + parseInt(g.yen.replace(/[^0-9]/g, ""), 10), 0);
   const paidGbp = paidItems.reduce((s, g) => s + g.gbp, 0);
+
+  const accomKnown = STAYS.reduce((s, x) => s + (x.gbp || 0), 0);
+  const accomTbcNights = STAYS.filter(x => x.gbp == null).reduce((s, x) => s + x.nights, 0);
+
+  const allTransport = [...FLIGHTS, ...FERRIES, ...GROUND];
+  const transportKnown = allTransport.reduce((s, x) => s + (x.gbp || 0), 0);
+  const transportTbc = allTransport.filter(x => x.gbp == null).length;
+
+  const grandKnown = accomKnown + transportKnown;
+
+  const IBM = "'IBM Plex Sans', system-ui, sans-serif";
+  const SERIF = "'Instrument Serif', Georgia, serif";
+
   return (
     <div>
+      {/* You owe Leika header */}
       <div style={{
         background: "linear-gradient(135deg, #1c2e25 0%, #2a4538 100%)",
-        borderRadius: 14, padding: "26px 28px", marginBottom: 18,
-        display: "flex", alignItems: "flex-end", justifyContent: "space-between",
+        borderRadius: 14, padding: isMobile ? "20px 18px" : "26px 28px", marginBottom: 10,
         color: "#f4f1e8", position: "relative", overflow: "hidden",
       }}>
         <div style={{
@@ -567,110 +618,142 @@ function MoneyTab() {
           borderRadius: "50%", background: "radial-gradient(circle, rgba(232,200,154,0.15) 0%, transparent 70%)",
           pointerEvents: "none",
         }} />
-        <div style={{ position: "relative" }}>
-          <div style={{
-            fontSize: 11, color: "rgba(244,241,232,0.65)", fontWeight: 600,
-            textTransform: "uppercase", letterSpacing: "0.18em", marginBottom: 10,
-            fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
-          }}>You owe Leika</div>
-          <div style={{
-            fontSize: isMobile ? 44 : 64, fontWeight: 400, lineHeight: 1, color: "#f4f1e8",
-            fontFamily: "'Instrument Serif', Georgia, serif",
-          }}>£{totalOwed.toFixed(2)}</div>
-          <div style={{
-            fontSize: 16, color: "rgba(244,241,232,0.7)", marginTop: 8,
-            fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
-            letterSpacing: "0.02em",
-          }}>≈ {totalYen.toLocaleString()}¥</div>
-          <div style={{
-            fontSize: 13, color: "rgba(244,241,232,0.6)", marginTop: 10,
-            fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
-          }}>{unpaidItems.length} unpaid · £{paidGbp.toFixed(2)} already settled</div>
+        <div style={{ position: "relative", display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+          <div>
+            <div style={{ fontSize: 11, color: "rgba(244,241,232,0.65)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.18em", marginBottom: 8, fontFamily: IBM }}>You owe Leika</div>
+            <div style={{ fontSize: isMobile ? 40 : 64, fontWeight: 400, lineHeight: 1, color: "#f4f1e8", fontFamily: SERIF }}>£{totalOwed.toFixed(2)}</div>
+            <div style={{ fontSize: 15, color: "rgba(244,241,232,0.7)", marginTop: 6, fontFamily: IBM }}>≈ {totalYen.toLocaleString()}¥</div>
+            <div style={{ fontSize: 12, color: "rgba(244,241,232,0.55)", marginTop: 6, fontFamily: IBM }}>{unpaidItems.length} unpaid · £{paidGbp.toFixed(2)} already settled</div>
+          </div>
+          <div style={{ padding: "5px 12px", background: "rgba(232,200,154,0.15)", color: "#e8c89a", border: "1px solid rgba(232,200,154,0.3)", borderRadius: 99, fontSize: 11, fontWeight: 600, fontFamily: IBM, alignSelf: "flex-start" }}>Outstanding</div>
         </div>
-        <div style={{
-          padding: "6px 14px", background: "rgba(232,200,154,0.15)",
-          color: "#e8c89a", border: "1px solid rgba(232,200,154,0.3)",
-          borderRadius: 99, fontSize: 12, fontWeight: 600,
-          fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
-          letterSpacing: "0.02em",
-        }}>Outstanding</div>
       </div>
-      <div style={{ background: "white", border: "1px solid #e2dfd6", borderRadius: 14, overflow: "hidden" }}>
+
+      {/* GEORGE items */}
+      <div style={{ background: "white", border: "1px solid #e2dfd6", borderRadius: 14, overflow: "hidden", marginBottom: 18 }}>
         {GEORGE.map((g, i) => {
           const isPaid = g.status === "paid";
-          if (isMobile) {
-            return (
-              <div key={i} style={{
-                padding: "12px 14px",
-                borderBottom: i < GEORGE.length - 1 ? "1px solid #f0ede4" : "none",
-                background: isPaid ? "#fafaf7" : "white",
-                opacity: isPaid ? 0.7 : 1,
-                display: "flex", flexDirection: "column", gap: 4,
-              }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-                  <span style={{ fontSize: 11, color: "#a8a298", fontWeight: 600, letterSpacing: "0.04em", fontFamily: "'IBM Plex Sans', system-ui, sans-serif" }}>{g.date}</span>
-                  <Badge status={isPaid ? "confirmed" : "urgent"}>{isPaid ? "Paid ✓" : "Unpaid"}</Badge>
-                </div>
-                <div style={{
-                  fontSize: 14, color: "#1f1d18",
-                  fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
-                  textDecoration: isPaid ? "line-through" : "none",
-                  textDecorationColor: "#a8a298",
-                }}>{g.item}</div>
-                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 }}>
-                  <span style={{ fontSize: 12, color: "#8a8478", fontFamily: "'IBM Plex Sans', system-ui, sans-serif" }}>{g.yen}</span>
-                  <span style={{ fontSize: 18, color: "#1f1d18", fontFamily: "'Instrument Serif', Georgia, serif", fontWeight: 500 }}>£{g.gbp.toFixed(2)}</span>
-                </div>
-              </div>
-            );
-          }
           return (
             <div key={i} style={{
-              display: "flex", alignItems: "center", gap: 14,
-              padding: "16px 20px",
+              padding: isMobile ? "11px 14px" : "14px 20px",
               borderBottom: i < GEORGE.length - 1 ? "1px solid #f0ede4" : "none",
               background: isPaid ? "#fafaf7" : "white",
-              opacity: isPaid ? 0.7 : 1,
+              opacity: isPaid ? 0.65 : 1,
+              display: "flex", alignItems: isMobile ? "flex-start" : "center",
+              flexDirection: isMobile ? "column" : "row",
+              gap: isMobile ? 3 : 14,
             }}>
-              <span style={{
-                fontSize: 11.5, color: "#a8a298", minWidth: 70, flexShrink: 0,
-                fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
-              }}>{g.date}</span>
-              <span style={{
-                fontSize: 14, color: "#1f1d18", flex: 1,
-                fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
-                textDecoration: isPaid ? "line-through" : "none",
-                textDecorationColor: "#a8a298",
-              }}>{g.item}</span>
-              <Badge status={isPaid ? "confirmed" : "urgent"}>{isPaid ? "Paid ✓" : "Unpaid"}</Badge>
-              <span style={{
-                fontSize: 12, color: "#8a8478", paddingRight: 12, minWidth: 70, textAlign: "right",
-                fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
-              }}>{g.yen}</span>
-              <span style={{
-                fontSize: 18, color: "#1f1d18", minWidth: 72, textAlign: "right",
-                fontFamily: "'Instrument Serif', Georgia, serif", fontWeight: 500,
-              }}>£{g.gbp.toFixed(2)}</span>
+              {isMobile ? (
+                <>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", gap: 8 }}>
+                    <span style={{ fontSize: 11, color: "#a8a298", fontWeight: 600, letterSpacing: "0.04em", fontFamily: IBM }}>{g.date}</span>
+                    <Badge status={isPaid ? "confirmed" : "urgent"}>{isPaid ? "Paid ✓" : "Unpaid"}</Badge>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", width: "100%", gap: 8 }}>
+                    <span style={{ fontSize: 13.5, color: "#1f1d18", fontFamily: IBM, textDecoration: isPaid ? "line-through" : "none", textDecorationColor: "#a8a298" }}>{g.item}</span>
+                    <span style={{ fontSize: 17, color: "#1f1d18", fontFamily: SERIF, fontWeight: 500, flexShrink: 0 }}>£{g.gbp.toFixed(2)}</span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <span style={{ fontSize: 11.5, color: "#a8a298", minWidth: 70, flexShrink: 0, fontFamily: IBM }}>{g.date}</span>
+                  <span style={{ fontSize: 14, color: "#1f1d18", flex: 1, fontFamily: IBM, textDecoration: isPaid ? "line-through" : "none", textDecorationColor: "#a8a298" }}>{g.item}</span>
+                  <Badge status={isPaid ? "confirmed" : "urgent"}>{isPaid ? "Paid ✓" : "Unpaid"}</Badge>
+                  <span style={{ fontSize: 12, color: "#8a8478", minWidth: 60, textAlign: "right", fontFamily: IBM }}>{g.yen}</span>
+                  <span style={{ fontSize: 18, color: "#1f1d18", minWidth: 72, textAlign: "right", fontFamily: SERIF, fontWeight: 500 }}>£{g.gbp.toFixed(2)}</span>
+                </>
+              )}
             </div>
           );
         })}
-        <div style={{
-          display: "flex", alignItems: "center", gap: 14, padding: "18px 20px",
-          background: "#f7f4eb", borderTop: "2px solid #e2dfd6",
-        }}>
-          <span style={{ fontSize: 11.5, minWidth: 70, flexShrink: 0 }}></span>
-          <span style={{
-            fontSize: 13, fontWeight: 600, color: "#1f1d18", flex: 1,
-            textTransform: "uppercase", letterSpacing: "0.12em",
-            fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
-          }}>Still outstanding</span>
-          <span style={{ minWidth: 70 }} />
-          <span style={{ paddingRight: 12, fontSize: 12, color: "#8a8478", minWidth: 70, textAlign: "right", fontFamily: "'IBM Plex Sans', system-ui, sans-serif" }}>{totalYen.toLocaleString()}¥</span>
-          <span style={{
-            fontSize: 24, color: "#c4502f", minWidth: 72, textAlign: "right",
-            fontFamily: "'Instrument Serif', Georgia, serif", fontWeight: 500,
-          }}>£{totalOwed.toFixed(2)}</span>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", background: "#f7f4eb", borderTop: "2px solid #e2dfd6", gap: 8, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: "#1f1d18", textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: IBM }}>Still outstanding</span>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
+            <span style={{ fontSize: 12, color: "#8a8478", fontFamily: IBM }}>{totalYen.toLocaleString()}¥</span>
+            <span style={{ fontSize: 22, color: "#c4502f", fontFamily: SERIF }}>£{totalOwed.toFixed(2)}</span>
+          </div>
         </div>
+      </div>
+
+      {/* Cost summary accordions */}
+      <SecLabel color="#5b574e">Trip cost breakdown</SecLabel>
+
+      <CostAccordion title="Accommodation" icon="🏠" known={accomKnown} color="#2d6a52"
+        tbcNote={accomTbcNights > 0 ? `${accomTbcNights} nights still TBC (Tokyo)` : "All nights accounted for"}>
+        {STAYS.filter(s => s.gbp != null || s.cost !== "—").map((s, i, arr) => (
+          <div key={i} style={{
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            padding: "10px 18px", gap: 12,
+            borderBottom: i < arr.length - 1 ? "1px solid #f0ede4" : "none",
+            flexWrap: "wrap",
+          }}>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: 13, color: "#1f1d18", fontFamily: IBM, fontWeight: 500 }}>{s.name}</div>
+              <div style={{ fontSize: 11, color: "#a8a298", fontFamily: IBM, marginTop: 1 }}>{s.dates} · {s.nights} night{s.nights !== 1 ? "s" : ""}</div>
+            </div>
+            <div style={{ textAlign: "right", flexShrink: 0 }}>
+              {s.gbp != null
+                ? <span style={{ fontSize: 15, color: "#1f1d18", fontFamily: SERIF }}>£{s.gbp.toFixed(2)}</span>
+                : <span style={{ fontSize: 12, color: "#a8a298", fontFamily: IBM }}>TBC</span>
+              }
+            </div>
+          </div>
+        ))}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 18px", background: "#f7f4eb", borderTop: "1px solid #e2dfd6" }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#5b574e", textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: IBM }}>Known total</span>
+          <span style={{ fontSize: 18, color: "#1f1d18", fontFamily: SERIF }}>£{accomKnown.toFixed(2)}</span>
+        </div>
+      </CostAccordion>
+
+      <CostAccordion title="Transport" icon="✈️" known={transportKnown} color="#6f5fc4"
+        tbcNote={transportTbc > 0 ? `${transportTbc} item${transportTbc !== 1 ? "s" : ""} still TBC` : "All transport accounted for"}>
+        {[
+          { label: "Flights", items: FLIGHTS },
+          { label: "Ferries", items: FERRIES },
+          { label: "Trains & buses", items: GROUND },
+        ].map(({ label, items }) => (
+          <React.Fragment key={label}>
+            <div style={{ padding: "8px 18px 4px", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "#a8a298", fontFamily: IBM, background: "#fdfcf8" }}>{label}</div>
+            {items.map((t, i) => (
+              <div key={i} style={{
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                padding: "8px 18px", gap: 12,
+                borderBottom: "1px solid #f0ede4", flexWrap: "wrap",
+              }}>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 13, color: "#1f1d18", fontFamily: IBM, fontWeight: 500 }}>{t.route}</div>
+                  <div style={{ fontSize: 11, color: "#a8a298", fontFamily: IBM, marginTop: 1 }}>{t.date}</div>
+                </div>
+                <div style={{ flexShrink: 0 }}>
+                  {t.gbp != null
+                    ? <span style={{ fontSize: 15, color: "#1f1d18", fontFamily: SERIF }}>£{t.gbp.toFixed(2)}</span>
+                    : <span style={{ fontSize: 12, color: "#a8a298", fontFamily: IBM }}>TBC</span>
+                  }
+                </div>
+              </div>
+            ))}
+          </React.Fragment>
+        ))}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 18px", background: "#f7f4eb", borderTop: "1px solid #e2dfd6" }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#5b574e", textTransform: "uppercase", letterSpacing: "0.1em", fontFamily: IBM }}>Known total</span>
+          <span style={{ fontSize: 18, color: "#1f1d18", fontFamily: SERIF }}>£{transportKnown.toFixed(2)}</span>
+        </div>
+      </CostAccordion>
+
+      <CostAccordion title="Activities" icon="🎌" known={0} color="#c25a4a"
+        tbcNote="No activity costs logged yet">
+        <div style={{ padding: "20px 18px", fontSize: 13, color: "#8a8478", fontFamily: IBM, textAlign: "center" }}>
+          Add activity costs to data.js as you plan them.
+        </div>
+      </CostAccordion>
+
+      {/* Grand total */}
+      <div style={{ background: "white", border: "1px solid #e2dfd6", borderRadius: 14, padding: "16px 20px", display: "flex", alignItems: "baseline", justifyContent: "space-between", marginTop: 4, flexWrap: "wrap", gap: 8 }}>
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#a8a298", marginBottom: 3, fontFamily: IBM }}>Total trip cost (known)</div>
+          <div style={{ fontSize: 12, color: "#8a8478", fontFamily: IBM }}>Excl. Tokyo accom, some transport & activities</div>
+        </div>
+        <div style={{ fontFamily: SERIF, fontSize: 34, color: "#1f1d18" }}>£{grandKnown.toFixed(2)}</div>
       </div>
     </div>
   );
