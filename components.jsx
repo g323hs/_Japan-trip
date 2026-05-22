@@ -509,39 +509,61 @@ function DayCard({ day, defaultOpen = false }) {
           <div style={{ fontSize: isMobile ? 9 : 10, color: "#a09a8a", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" }}>{day.short}</div>
           <div style={{ fontSize: isMobile ? 12 : 13, fontWeight: 700, color: "#2d2a23", marginTop: 2, fontFamily: "'Instrument Serif', Georgia, serif", letterSpacing: "0.01em" }}>{day.date}</div>
         </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 6 }}>
+        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 4 }}>
+          {/* Title row — badges pinned top-right */}
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8 }}>
             <span style={{
               fontSize: isMobile ? 15 : 16, fontWeight: 500, color: "#1f1d18",
               fontFamily: "'Instrument Serif', Georgia, serif", letterSpacing: "0.005em",
             }}>{day.title}</span>
-            <span style={{
-              fontSize: 11, background: "#eef0ea", color: "#4a5742",
-              borderRadius: 99, padding: "2px 9px", fontWeight: 500,
-              fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
-            }}>{day.loc}</span>
-            <Badge status={day.status}>{statusLabel}</Badge>
+            <div style={{ display: "flex", gap: 5, flexShrink: 0, alignItems: "center", paddingTop: 2 }}>
+              <span style={{
+                fontSize: 11, background: "#eef0ea", color: "#4a5742",
+                borderRadius: 99, padding: "2px 9px", fontWeight: 500,
+                fontFamily: "'IBM Plex Sans', system-ui, sans-serif", whiteSpace: "nowrap",
+              }}>{day.loc}</span>
+              <Badge status={day.status}>{statusLabel}</Badge>
+            </div>
           </div>
-          {day.transport.map((t, i) => <TransportLine key={i} item={t} loc={day.loc} />)}
-          {day.summary && (
-            <div style={{
-              fontSize: 12, color: "#7a7468", marginTop: day.transport.length ? 4 : 2,
-              fontFamily: "'IBM Plex Sans', system-ui, sans-serif", lineHeight: 1.5,
-            }}>{day.summary}</div>
-          )}
+          {/* Summary row — icons + text left, +/- right */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap", flex: 1, minWidth: 0 }}>
+              {day.transport.map((t, i) => {
+                const c = MODE_COLORS[t.mode] || "#5b574e";
+                return (
+                  <span key={i} style={{
+                    width: 20, height: 20, borderRadius: 4, flexShrink: 0,
+                    background: `${c}18`, color: c,
+                    display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 11,
+                  }}>{MODE_ICONS[t.mode] || "•"}</span>
+                );
+              })}
+              {day.summary && (
+                <span style={{
+                  fontSize: 13, color: "#3a3830",
+                  fontFamily: "'IBM Plex Sans', system-ui, sans-serif", lineHeight: 1.5,
+                }}>{day.summary}</span>
+              )}
+            </div>
+            {hasMore && (
+              <div style={{
+                fontSize: 11, color: "#a8a298", fontWeight: 600, flexShrink: 0,
+                fontFamily: "'IBM Plex Sans', system-ui, sans-serif", letterSpacing: "0.05em",
+              }}>{open ? "− less" : "+ more"}</div>
+            )}
+          </div>
         </div>
-        {hasMore && (
-          <div style={{
-            fontSize: 11, color: "#a8a298", flexShrink: 0, paddingTop: 8,
-            fontWeight: 600, fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
-            letterSpacing: "0.05em",
-          }}>{open ? "− less" : "+ more"}</div>
-        )}
       </div>
       {showDayGuide && day.guide && <DayGuide guide={day.guide} onClose={() => setShowDayGuide(false)} />}
       {open && hasMore && (
         <div style={{ borderTop: "1px solid #f0ede4", display: showMap && !isNarrow ? "grid" : "block", gridTemplateColumns: "1fr 1fr", alignItems: "stretch" }}>
           <div style={{ padding: isMobile ? "14px 14px 16px" : "16px 18px 18px 18px", background: "#fbfaf5" }}>
+          {day.transport.length > 0 && (
+            <div style={{ marginBottom: 14 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "#a8a298", marginBottom: 6, fontFamily: "'IBM Plex Sans', system-ui, sans-serif" }}>Getting there</div>
+              {day.transport.map((t, i) => <TransportLine key={i} item={t} loc={day.loc} />)}
+            </div>
+          )}
           {day.schedule && day.schedule.length > 0 && <DayTimeline schedule={day.schedule} highlightKey={highlightKey} loc={day.loc} onBlockClick={showMap ? handleBlockClick : undefined} />}
           {day.bookings && day.bookings.length > 0 && (
             <div style={{ marginBottom: 16 }}>

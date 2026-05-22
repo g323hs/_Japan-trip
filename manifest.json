@@ -1,0 +1,10 @@
+{
+  "name": "Japan Summer 2026",
+  "short_name": "Japan 2026",
+  "description": "Trip planner for Japan Summer 2026",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f1e8",
+  "theme_color": "#1c2e25"
+}

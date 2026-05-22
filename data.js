@@ -48,7 +48,7 @@ const FERRY_REBUN_WKJ_CONF = "uploads/transport/ferry-rebun-wakkanai-17jul.png";
 
 const DAYS = [
   { id: 1, date: "7 Jul", short: "Tue", title: "Fly London → Delhi", loc: "Heathrow", status: "confirmed", phase: "outbound",
-    summary: "Seat 049A · Boeing 787-9 · 6h 35m transit in Delhi on arrival",
+    summary: "✈️ LHR → Delhi · overnight flight",
     transport: [{ mode: "plane", text: "Air India 2016 · LHR 21:05 → DEL 11:35 (next day)", meta: "10h 0m · 6h 35m transit in Delhi" }],
     activities: [], food: [], notes: [],
     schedule: [
@@ -60,7 +60,7 @@ const DAYS = [
       { label: "PNR FF686P · AI ref XS55VZ · eTkt 0986393639706", url: PH_TRAVEL_PDF },
     ] },
   { id: 2, date: "8 Jul", short: "Wed", title: "Fly Delhi → Tokyo", loc: "Delhi", status: "confirmed", phase: "outbound",
-    summary: "⏳ 6h 35m Delhi layover · seat 044K · Boeing 787-8 · arrives Tokyo at dawn",
+    summary: "⏳ Delhi layover · ✈️ Delhi → Tokyo · arrive at dawn",
     transport: [{ mode: "plane", text: "Air India 358 · DEL 18:10 → HND 5:55 (next day)", meta: "8h 15m" }],
     activities: [], food: [], notes: [],
     schedule: [
@@ -73,13 +73,13 @@ const DAYS = [
       { label: "PNR FF686P · AI ref XS55VZ", url: PH_TRAVEL_PDF },
     ] },
   { id: 3, date: "9–12 Jul", short: "Thu–Sun", title: "Tokyo (first stretch)", loc: "Tokyo", status: "urgent", phase: "tokyo-1",
-    summary: "🏙️ 3 full days to explore Tokyo · accommodation TBC ⚠️",
+    summary: "🏙️ Tokyo · 3 full days · ⚠️ accommodation TBC",
     transport: [{ mode: "plane", text: "Arrive Haneda 5:55am on 9 Jul", meta: "Three full days before Hokkaido" }],
     activities: ["3 days to explore Tokyo before the Hokkaido leg — itinerary still loose"],
     food: [],
     notes: ["⚠️ Accommodation not confirmed in any docs you shared — check this is booked"] },
   { id: 4, date: "12 Jul", short: "Sun", title: "Tokyo → Sapporo → Wakkanai", loc: "Wakkanai", status: "confirmed", phase: "islands",
-    summary: "🌊 Breakwater Dome walk · 🚲 Evening bike rental · 🍣 Fukuko Market dinner",
+    summary: "✈️ Tokyo → Wakkanai · 🌊 Breakwater Dome · 🚲 Bike rental · 🍣 Fukuko Market",
     transport: [
       { mode: "plane", text: "Peach Aviation NRT → CTS · 11:50 → 13:40", meta: "£98.98 / ~21,100¥ · Confirmed" },
       { mode: "plane", text: "CTS → Wakkanai airport · 15:30 → 16:25", meta: "Confirmed" },
@@ -112,7 +112,7 @@ const DAYS = [
       { label: "Guest House Moshiripa", url: MOSHIRIPA_PDF },
     ] },
   { id: 5, date: "13 Jul", short: "Mon", title: "Ferry to Rishiri + cycling", loc: "Rishiri Island", status: "confirmed", phase: "islands",
-    summary: "🚲 7hr island cycling course · 🌋 Views of Mt. Rishiri · 🍱 Ryokan dinner at Saito Inn",
+    summary: "⛴️ Ferry to Rishiri · 🚲 Island cycling · 🌋 Mt. Rishiri · 🍱 Ryokan dinner",
     transport: [
       { mode: "walk", text: "Leave Moshiripa 6:30am · 15-min walk to ferry terminal", meta: "Set alarm — early start" },
       { mode: "ferry", text: "Ferry Wakkanai → Rishiri · 07:15 → 08:55", meta: "BOOKED · ref 2607-07596 ✓ · 7,180¥ / £33.65 each" },
@@ -141,7 +141,7 @@ const DAYS = [
       { label: "Ferry confirmation (Leika's booking)", url: FERRY_WKJ_RISHIRI_CONF },
     ] },
   { id: 6, date: "14 Jul", short: "Tue", title: "Rishiri morning → Ferry to Rebun", loc: "Rebun Island", status: "confirmed", phase: "islands",
-    summary: "🏛️ Rebun Folk Museum · ♨️ Onsen at Usuyuki-no-Yu · 🏠 Check in Rebunshiri from 4pm",
+    summary: "⛴️ Ferry to Rebun · 🏛️ Folk Museum · ♨️ Onsen · 🏠 Check in Rebunshiri",
     transport: [
       { mode: "bike", text: "Morning: shorter cycling course on Rishiri", meta: "Bikes still from Saito Ryokan" },
       { mode: "ferry", text: "Ferry Oshidomari → Kafuka · 13:15 → 14:00", meta: "BOOKED · ref 2607-07999 ✓ · 1,800¥ / £8.41 per adult" },
@@ -169,7 +169,7 @@ const DAYS = [
       { label: "Shimanoyado Rebunshiri · #6117.328.292 PIN 0351", url: REBUNSHIRI_PDF },
     ] },
   { id: 7, date: "15 Jul", short: "Wed", title: "Rebun cycling day", loc: "Rebun Island", status: "confirmed", phase: "islands",
-    summary: "🌄 04:30 Momoiwa sunrise (Course 13) · ☕ Kitano Canary Park café (Course 15) · 🚲 Course 14 afternoon",
+    summary: "🌄 Momoiwa sunrise · 🚲 Full cycling day · ☕ Kitano Canary Park",
     transport: [
       { mode: "bike", text: "Rent from Cat Rock", meta: "3,000¥ / ~£14 · 24hr" },
     ],
@@ -192,7 +192,7 @@ const DAYS = [
       { label: "Shimanoyado Rebunshiri · #6117.328.292 PIN 0351", url: REBUNSHIRI_PDF },
     ] },
   { id: 8, date: "16 Jul", short: "Thu", title: "Forest hike + north island bus", loc: "Rebun Island", status: "confirmed", phase: "islands",
-    summary: "🥾 8km Forest Road hike · ☕ Café Ruwe after trail · 🌄 Evening Momoiwa Observatory hike",
+    summary: "🥾 Forest Road hike · 🚌 Soya B-course bus · 🌄 Momoiwa evening",
     transport: [
       { mode: "bus", text: "Soya bus Rebun B course · 14:15 → 16:40", meta: "Booked ✓" },
     ],
@@ -214,7 +214,7 @@ const DAYS = [
       { start: "19:00", end: "20:30", label: "Momoiwa hike", kind: "activity" },
     ] },
   { id: 9, date: "17 Jul", short: "Fri", title: "Rebun → Wakkanai → Asahikawa", loc: "Asahikawa", status: "pending", phase: "mainland",
-    summary: "🍱 Bento from Wakkanai station · 🏙️ Explore Asahikawa evening · 🏠 Buddy House check-in from 16:00",
+    summary: "⛴️ Ferry → Wakkanai · 🚂 Train to Asahikawa · 🏙️ Evening explore",
     transport: [
       { mode: "ferry", text: "Check out · Ferry Rebun → Wakkanai · 08:55 → 10:50", meta: "BOOKED · ref 2607-09701 ✓ · 3,950¥ / £18.46 per adult" },
       { mode: "walk", text: "10-min walk: ferry terminal → Wakkanai station", meta: "Grab a bento for the train" },
@@ -237,7 +237,7 @@ const DAYS = [
       { label: "Buddy House · #5278.868.395 PIN 9824", url: BUDDY_HOUSE_PDF },
     ] },
   { id: 10, date: "18 Jul", short: "Sat", title: "Asahidake hike + cable car", loc: "Asahikawa / Asahidake", status: "confirmed", phase: "mainland",
-    summary: "🚡 Cable car up · 🥾 5hr summit hike (2291m) · ☕ Higashikawa cafés · 🛒 Aeon Mall dinner",
+    summary: "🚡 Asahidake cable car · 🥾 Summit hike · ☕ Higashikawa cafés",
     transport: [
       { mode: "walk", text: "Leave 6:20am — 26 min to bus stop", meta: "Don't oversleep" },
       { mode: "bus", text: "Bus 66番 · JR Asahikawa sta. stop 9 · 7:15am", meta: "1,800¥ / ~£8.45 · vending-machine ticket" },
@@ -267,8 +267,8 @@ const DAYS = [
       { label: "Bus timetable (Asahidake line)", url: "https://www.asahikawa-denkikidou.jp/asahidaek_line/" },
       { label: "Asahidake hike guide", url: "https://hokkaidowilds.org/hiking/asahidake-ropeway-to-asahidake-summit" },
     ] },
-  { id: 11, date: "19 Jul", short: "Sun", title: "Asahikawa → Furano · lavender", loc: "Furano", status: "pending", phase: "mainland",
-    summary: "🌸 Farm Tomita lavender fields · 🌺 Sakiwai + Irodori fields · ✨ Ningle Terrace evening",
+  { id: 11, date: "19 Jul", short: "Sun", title: "Asahikawa → Furano · lavender", loc: "Furano", status: "confirmed", phase: "mainland",
+    summary: "🚌 Asahikawa → Furano · 🌸 Lavender farms · ✨ Ningle Terrace",
     transport: [
       { mode: "bus", text: "Lavender Train bus · 9:55am · arrive Furano 11:38am", meta: "Buy on bus, no reservation" },
       { mode: "train", text: "~36-min train → Farm Tomita", meta: "From Furano station" },
@@ -294,7 +294,7 @@ const DAYS = [
       { label: "Furano bus routes", url: "https://www.furanobus.jp/rosen/" },
     ] },
   { id: 12, date: "20 Jul", short: "Mon", title: "Blue Pond → Sapporo", loc: "Sapporo", status: "confirmed", phase: "mainland",
-    summary: "💙 Shirogane Blue Pond · 💧 Shirogane Taki Falls · 🏙️ Arrive Sapporo · 🏨 Grand Hostel LDK check-in",
+    summary: "💙 Blue Pond · 💧 Shirogane Falls · 🚌 Highway bus to Sapporo",
     transport: [
       { mode: "walk", text: "Check out 7:00am · store luggage at hostel", meta: "", mapQuery: "064-0805 Hokkaido Sapporo Chuo-ku Minami 5 jo Nishi 9 chome 1008-10" },
       { mode: "bus", text: "~1h 40min to Shirogane Blue Pond · +25-min walk to the Falls", meta: "Back by ~1:20pm" },
@@ -335,7 +335,7 @@ const DAYS = [
       { label: "Directions: Tomar → Blue Pond", url: "https://www.google.com/maps/dir/Tomar+%26+Eversa+(Hostel+and+Cafe+Lounge),+%E3%82%B3%E3%83%B3%E3%82%B7%E3%82%A7%E3%83%AB%E3%82%B8%E3%83%A5+%E3%83%95%E3%83%A9%E3%83%8E%E5%86%85+2-27+Motomachi,+Furano,+Hokkaido+076-0031,+Japan/Shirogane+Blue+Pond+(Aoiike),+Shirogane,+Biei,+Kamikawa+District,+Hokkaido+071-0235,+Japan/@43.4948001,142.3340925,11z/data=!3m1!4b1!4m14!4m13!1m5!1m1!1s0x5f734d29ea305185:0xd172fb3995cdbe!2m2!1d142.388071!2d43.3471364!1m5!1m1!1s0x5f0ccc62de222a6f:0x4cd181f9f4b779e!2m2!1d142.6142144!2d43.4934738!3e3?entry=ttu&g_ep=EgoyMDI2MDUxMy4wIKXMDSoASAFQAw%3D%3D" },
     ] },
   { id: 13, date: "21 Jul", short: "Tue", title: "Sapporo day 1 · Nature & City Streets", loc: "Sapporo", status: "confirmed", phase: "mainland",
-    summary: "🏔️ Mt. Maruyama forest hike · ⛩️ Hokkaido Shrine · 🏮 Tanuki Koji arcade · 🦞 Susukino seafood + shime-parfait",
+    summary: "🏔️ Mt. Maruyama · ⛩️ Hokkaido Shrine · 🏮 Tanuki Koji · 🦞 Susukino",
     transport: [],
     activities: [
       "Mt. Maruyama — 225m hike through ancient forest, 88 Kannon statues, panoramic summit views",
@@ -368,7 +368,7 @@ const DAYS = [
       { label: "Grand Hostel LDK Sapporo", url: GRAND_HOSTEL_LDK_PDF },
     ] },
   { id: 14, date: "22 Jul", short: "Wed", title: "Sapporo day 2 · Seasonal Highlights", loc: "Sapporo", status: "confirmed", phase: "mainland",
-    summary: "🗿 Hill of the Buddha · 🎨 Sapporo Art Park · 🎓 Hokkaido University · 🌃 Mt. Moiwa night view · 🍜 Tanuki Koji dinner",
+    summary: "🗿 Hill of the Buddha · 🎨 Art Park · 🎓 Hokkaido University · 🌃 Mt. Moiwa",
     transport: [
       { mode: "bus", text: "9:15am bus · Makomanai sta. line 2 · 35 min", meta: "→ Hill of the Buddha" },
     ],
@@ -403,7 +403,7 @@ const DAYS = [
       { label: "Grand Hostel LDK Sapporo", url: GRAND_HOSTEL_LDK_PDF },
     ] },
   { id: 15, date: "23 Jul", short: "Thu", title: "Sapporo day 3 → Chitose", loc: "Sapporo / Chitose", status: "confirmed", phase: "mainland",
-    summary: "🕰️ Clock Tower · 🦀 Nijo Market seafood · 📡 TV Tower + Odori Park · 🍜 Ramen Alley · 🏮 Tanuki Koji · 🍺 Beer Garden Genghis Khan BBQ",
+    summary: "🕰️ Clock Tower · 🦀 Nijo Market · 🍺 Beer Garden BBQ · 🚂 → Chitose",
     transport: [
       { mode: "train", text: "JR rapid Sapporo → Chitose · ~35 min", meta: "Evening" },
     ],
@@ -445,7 +445,7 @@ const DAYS = [
       { label: "遊悠館 Chitose", url: YUYUKAN_PDF },
     ] },
   { id: 16, date: "24 Jul", short: "Fri", title: "Fly Sapporo → Tokyo", loc: "Tokyo", status: "urgent", phase: "tokyo-2",
-    summary: "🏙️ 4 more days in Tokyo · accommodation TBC ⚠️",
+    summary: "✈️ Sapporo → Tokyo · 🏙️ 4 more days · ⚠️ accommodation TBC",
     transport: [
       { mode: "walk", text: "Arrive New Chitose by 11:30am", meta: "" },
       { mode: "plane", text: "Peach Aviation CTS → NRT · 11:50 → 13:35", meta: "Confirmed" },
@@ -464,7 +464,7 @@ const DAYS = [
       { label: "Peach CTS → NRT", url: PEACH_BOOKING_URL },
     ] },
   { id: 17, date: "28 Jul", short: "Tue", title: "Fly Tokyo → Delhi", loc: "Haneda", status: "confirmed", phase: "return",
-    summary: "Seat 044K · Boeing 787-8 · 7h overnight transit in Delhi",
+    summary: "✈️ Tokyo → Delhi · overnight transit",
     transport: [{ mode: "plane", text: "Air India 357 · HND 11:50 → DEL 17:30", meta: "9h 10m · 7h transit" }],
     activities: [], food: [], notes: [],
     schedule: [
@@ -477,7 +477,7 @@ const DAYS = [
       { label: "PNR FF686P · AI ref XS55VZ", url: PH_TRAVEL_PDF },
     ] },
   { id: 18, date: "29 Jul", short: "Wed", title: "Fly Delhi → London", loc: "Delhi", status: "confirmed", phase: "return",
-    summary: "Seat 037H · Airbus A350-900 · arrives LHR T2 07:30 · home 🏠",
+    summary: "✈️ Delhi → London · home 🏠",
     transport: [{ mode: "plane", text: "Air India 161 · DEL 00:30 → LHR 07:30", meta: "11h 30m" }],
     activities: [], food: [], notes: [],
     schedule: [

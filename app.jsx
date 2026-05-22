@@ -196,9 +196,136 @@ function ActionPanel() {
 
 // ---- Booking link (defined in components.jsx and assigned to window) ----
 
+// ---- Today helpers ----
+function findTodayEntry() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const Y = new Date(TRIP.start).getFullYear();
+  const MON = { Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11 };
+  function startOf(str) {
+    const m = str.match(/^(\d+)(?:[–\-]\d+)?\s+(\w+)$/);
+    return m ? new Date(Y, MON[m[2]], +m[1]) : null;
+  }
+  let result = null;
+  for (const d of DAYS) {
+    const s = startOf(d.date);
+    if (s && s <= today) result = d; else if (s && s > today) break;
+  }
+  return result;
+}
+
+// ---- Today tab ----
+function TodayTab() {
+  const IBM = "'IBM Plex Sans', system-ui, sans-serif";
+  const SERIF = "'Instrument Serif', Georgia, serif";
+  const isMobile = useIsMobile();
+
+  const today = useMemo(() => { const d = new Date(); d.setHours(0,0,0,0); return d; }, []);
+  const tripStart = useMemo(() => { const d = new Date(TRIP.start); d.setHours(0,0,0,0); return d; }, []);
+  const tripEnd   = useMemo(() => { const d = new Date(TRIP.end);   d.setHours(0,0,0,0); return d; }, []);
+
+  const daysToGo  = Math.ceil((tripStart - today) / 86400000);
+  const tripDay   = Math.floor((today - tripStart) / 86400000) + 1;
+  const totalDays = Math.ceil((tripEnd - tripStart) / 86400000) + 1;
+
+  const isBefore = today < tripStart;
+  const isDuring = today >= tripStart && today <= tripEnd;
+
+  if (isBefore) {
+    return (
+      <div>
+        <div style={{
+          background: "white", border: "1px solid #e2dfd6", borderRadius: 14,
+          padding: isMobile ? "36px 20px" : "52px 48px", textAlign: "center",
+          marginBottom: 16, boxShadow: "0 4px 20px -10px rgba(40,30,15,0.12)",
+        }}>
+          <div style={{ fontSize: 11, letterSpacing: "0.2em", textTransform: "uppercase", color: "#a8a298", fontFamily: IBM, marginBottom: 14 }}>Days until departure</div>
+          <div style={{ fontSize: isMobile ? 96 : 128, fontFamily: SERIF, color: "#1f1d18", lineHeight: 1, marginBottom: 10 }}>{daysToGo}</div>
+          <div style={{ fontSize: 15, color: "#6f6a5d", fontFamily: IBM }}>7 Jul – 29 Jul 2026</div>
+        </div>
+        <div style={{ marginBottom: 16 }}>
+          {PHASES.map(p => (
+            <div key={p.id} style={{
+              display: "flex", alignItems: "center", gap: 12, padding: "10px 16px",
+              background: "white", border: "1px solid #e2dfd6", borderRadius: 10, marginBottom: 6,
+              fontFamily: IBM,
+            }}>
+              <div style={{ width: 3, alignSelf: "stretch", borderRadius: 2, background: p.color, flexShrink: 0 }} />
+              <div>
+                <div style={{ fontSize: 13.5, fontWeight: 600, color: "#1f1d18" }}>{p.label}</div>
+                <div style={{ fontSize: 12, color: "#8a8478", marginTop: 1 }}>{p.dates}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <ActionPanel />
+      </div>
+    );
+  }
+
+  if (isDuring) {
+    const todayEntry = findTodayEntry();
+    const idx = DAYS.findIndex(d => d.id === todayEntry?.id);
+    const tomorrowEntry = idx >= 0 && idx < DAYS.length - 1 ? DAYS[idx + 1] : null;
+    const phase = PHASES.find(p => p.id === todayEntry?.phase);
+    return (
+      <div>
+        <div style={{
+          background: "white", border: "1px solid #e2dfd6", borderRadius: 14,
+          padding: isMobile ? "18px 16px" : "22px 28px", marginBottom: 14,
+          display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12,
+          boxShadow: "0 4px 20px -10px rgba(40,30,15,0.12)",
+        }}>
+          <div>
+            <div style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "#a8a298", fontFamily: IBM, marginBottom: 6 }}>Today</div>
+            <div style={{ fontFamily: SERIF, fontSize: isMobile ? 26 : 34, color: "#1f1d18", lineHeight: 1.1 }}>
+              Day {tripDay} <span style={{ color: "#bcb6a8", fontSize: isMobile ? 17 : 22 }}>of {totalDays}</span>
+            </div>
+            {phase && (
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6 }}>
+                <div style={{ width: 7, height: 7, borderRadius: "50%", background: phase.color }} />
+                <span style={{ fontSize: 12, color: "#6f6a5d", fontFamily: IBM }}>{phase.label}</span>
+              </div>
+            )}
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <div style={{ fontFamily: SERIF, fontSize: isMobile ? 18 : 24, color: "#1f1d18" }}>
+              {today.toLocaleDateString("en-GB", { weekday: "long" })}
+            </div>
+            <div style={{ fontSize: 12.5, color: "#8a8478", fontFamily: IBM, marginTop: 2 }}>
+              {today.toLocaleDateString("en-GB", { day: "numeric", month: "long" })}
+            </div>
+          </div>
+        </div>
+        {todayEntry ? <DayCard day={todayEntry} defaultOpen /> : (
+          <div style={{ padding: "24px", textAlign: "center", color: "#8a8478", fontFamily: IBM }}>No day entry found for today.</div>
+        )}
+        {tomorrowEntry && (
+          <div style={{ marginTop: 20 }}>
+            <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.14em", color: "#a8a298", marginBottom: 8, fontFamily: IBM }}>Tomorrow</div>
+            <DayCard day={tomorrowEntry} />
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div style={{
+      background: "white", border: "1px solid #e2dfd6", borderRadius: 14,
+      padding: isMobile ? "48px 20px" : "72px 48px", textAlign: "center",
+      boxShadow: "0 4px 20px -10px rgba(40,30,15,0.12)",
+    }}>
+      <div style={{ fontSize: isMobile ? 56 : 80, marginBottom: 16 }}>🎌</div>
+      <div style={{ fontFamily: SERIF, fontSize: isMobile ? 28 : 40, color: "#1f1d18", marginBottom: 10 }}>Trip complete.</div>
+      <div style={{ fontSize: 14, color: "#6f6a5d", fontFamily: IBM }}>29 Jul 2026 · London bound.</div>
+    </div>
+  );
+}
+
 // ---- Tabs ----
 function Tabs({ tab, setTab }) {
   const TABS = [
+    { id: "today",     label: "Today" },
     { id: "map",       label: "Map" },
     { id: "days",      label: "Days" },
     { id: "transport", label: "Transport" },
@@ -239,7 +366,7 @@ function DaysTab() {
       {DAYS.filter(d => d.phase === "outbound").map(d => <DayCard key={d.id} day={d} />)}
 
       <SecLabel color="#c25a4a">Tokyo · first stretch (9–12 Jul)</SecLabel>
-      {DAYS.filter(d => d.phase === "tokyo-1").map(d => <DayCard key={d.id} day={d} defaultOpen />)}
+      {DAYS.filter(d => d.phase === "tokyo-1").map(d => <DayCard key={d.id} day={d} />)}
 
       <SecLabel color="#2d6a52">Hokkaido · northern islands (12–17 Jul)</SecLabel>
       {DAYS.filter(d => d.phase === "islands").map(d => <DayCard key={d.id} day={d} />)}
@@ -248,7 +375,7 @@ function DaysTab() {
       {DAYS.filter(d => d.phase === "mainland").map(d => <DayCard key={d.id} day={d} />)}
 
       <SecLabel color="#c25a4a">Tokyo · second stretch (24–28 Jul)</SecLabel>
-      {DAYS.filter(d => d.phase === "tokyo-2").map(d => <DayCard key={d.id} day={d} defaultOpen />)}
+      {DAYS.filter(d => d.phase === "tokyo-2").map(d => <DayCard key={d.id} day={d} />)}
 
       <SecLabel color="#7a8a73">Return · Tokyo to London</SecLabel>
       {DAYS.filter(d => d.phase === "return").map(d => <DayCard key={d.id} day={d} />)}
@@ -765,9 +892,11 @@ function App() {
   const isMobile = useIsMobile();
   const [tab, setTab] = useState(() => {
     const saved = localStorage.getItem("jp-tab");
-    // Migrate old tab ids to merged Days tab
     if (saved === "overview" || saved === "daily") return "days";
-    return saved || "map";
+    if (saved) return saved;
+    // Default to Today tab once trip has started
+    const now = new Date(); now.setHours(0,0,0,0);
+    return now >= new Date(TRIP.start) ? "today" : "map";
   });
 
   useEffect(() => { localStorage.setItem("jp-tab", tab); }, [tab]);
@@ -781,6 +910,7 @@ function App() {
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: isMobile ? "0 14px 48px" : "0 24px 64px" }}>
         <ActionPanel />
         <Tabs tab={tab} setTab={setTab} />
+        {tab === "today" && <TodayTab />}
         {tab === "map" && <TripMap key="map" />}
         {tab === "days" && (
           <div style={{
