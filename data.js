@@ -13,12 +13,6 @@ const URGENT = [
     body: "Opens exactly 1 month before. Set a calendar reminder.",
     deadline: "17 Jun",
   },
-  {
-    type: "urgent",
-    title: "Tokyo accommodation — 7 nights unaccounted (9–12 Jul & 24–28 Jul)",
-    body: "Check whether these are booked somewhere not in the docs you shared.",
-    deadline: "Critical",
-  },
 ];
 
 const SOYA_BUS_REBUN_B = "uploads/transport/soya-bus-rebun-b-ticket.pdf";
@@ -46,6 +40,9 @@ const FERRY_WKJ_RISHIRI_CONF = "uploads/transport/ferry-wakkanai-rishiri-13jul.p
 const FERRY_RISHIRI_REBUN_CONF = "uploads/transport/ferry-rishiri-rebun-14jul.png";
 const FERRY_REBUN_WKJ_CONF = "uploads/transport/ferry-rebun-wakkanai-17jul.png";
 
+const IMANO_HOSTEL_PDF   = "uploads/accom/imano-hostel-shinjuku-9-12jul.pdf";
+const TOKYO_W_INN_PDF    = "uploads/accom/tokyo-w-inn-asakusa-24-28jul.pdf";
+
 const DAYS = [
   { id: 1, date: "7 Jul", short: "Tue", title: "Fly London → Delhi", loc: "Heathrow", status: "confirmed", phase: "outbound",
     summary: "✈️ LHR → Delhi · overnight flight",
@@ -72,12 +69,15 @@ const DAYS = [
       { label: "AI 358 · Seat 044K · DEL T3 → HND T3 · 787-8", url: PH_TRAVEL_PDF },
       { label: "PNR FF686P · AI ref XS55VZ", url: PH_TRAVEL_PDF },
     ] },
-  { id: 3, date: "9–12 Jul", short: "Thu–Sun", title: "Tokyo (first stretch)", loc: "Tokyo", status: "urgent", phase: "tokyo-1",
-    summary: "🏙️ Tokyo · 3 full days · ⚠️ accommodation TBC",
-    transport: [{ mode: "plane", text: "Arrive Haneda 5:55am on 9 Jul", meta: "Three full days before Hokkaido" }],
-    activities: ["3 days to explore Tokyo before the Hokkaido leg — itinerary still loose"],
+  { id: 3, date: "9–12 Jul", short: "Thu–Sun", title: "Tokyo (first stretch)", loc: "Tokyo", status: "confirmed", phase: "tokyo-1",
+    summary: "🏙️ 3 days in Tokyo · Shinjuku base · itinerary TBD",
+    transport: [{ mode: "plane", text: "Arrive Haneda 5:55am on 9 Jul", meta: "Early arrival — check in from 16:00, store bags first" }],
+    activities: ["3 days to explore Tokyo before the Hokkaido leg — more to be planned"],
     food: [],
-    notes: ["⚠️ Accommodation not confirmed in any docs you shared — check this is booked"] },
+    notes: ["Arriving very early — Haneda has luggage storage; check-in not until 16:00"],
+    bookings: [
+      { label: "Imano Tokyo Hostel · #6037.580.015 PIN 5158", url: IMANO_HOSTEL_PDF },
+    ] },
   { id: 4, date: "12 Jul", short: "Sun", title: "Tokyo → Sapporo → Wakkanai", loc: "Wakkanai", status: "confirmed", phase: "islands",
     summary: "✈️ Tokyo → Wakkanai · 🌊 Breakwater Dome · 🚲 Bike rental · 🍣 Fukuko Market",
     transport: [
@@ -444,24 +444,45 @@ const DAYS = [
     bookings: [
       { label: "遊悠館 Chitose", url: YUYUKAN_PDF },
     ] },
-  { id: 16, date: "24 Jul", short: "Fri", title: "Fly Sapporo → Tokyo", loc: "Tokyo", status: "urgent", phase: "tokyo-2",
-    summary: "✈️ Sapporo → Tokyo · 🏙️ 4 more days · ⚠️ accommodation TBC",
+  { id: 16, date: "24 Jul", short: "Fri", title: "Fly Sapporo → Tokyo", loc: "Tokyo / Asakusa", status: "confirmed", phase: "tokyo-2",
+    summary: "✈️ Sapporo → Tokyo · 🏯 Asakusa base · 4 more days",
     transport: [
       { mode: "walk", text: "Arrive New Chitose by 11:30am", meta: "" },
       { mode: "plane", text: "Peach Aviation CTS → NRT · 11:50 → 13:35", meta: "Confirmed" },
     ],
-    activities: ["4 more days in Tokyo (24–28 Jul)"],
+    activities: ["Check in TOKYO-W-INN Asakusa from 16:00", "Explore Asakusa area — Senso-ji temple nearby"],
     food: [],
-    notes: ["⚠️ Post-Hokkaido Tokyo accommodation not confirmed in docs"],
+    notes: ["Non-refundable · check-in 16:00–23:00"],
     schedule: [
       { start: "09:00", end: "11:30", label: "To New Chitose", kind: "walk" },
       { start: "11:50", end: "13:35", label: "Peach CTS → NRT", kind: "plane" },
       { start: "13:35", end: "15:30", label: "NRT → Tokyo centre", kind: "train" },
-      { start: "15:30", end: "17:30", label: "Check in + rest", kind: "stay" },
-      { start: "18:00", end: "22:00", label: "Tokyo evening", kind: "activity" },
+      { start: "15:30", end: "16:00", label: "To Asakusa", kind: "train" },
+      { start: "16:00", end: "18:00", label: "Check in + rest", kind: "stay" },
+      { start: "18:00", end: "22:00", label: "Asakusa evening", kind: "activity" },
     ],
     bookings: [
       { label: "Peach CTS → NRT", url: PEACH_BOOKING_URL },
+      { label: "TOKYO-W-INN Asakusa · #5660.154.938 PIN 6710", url: TOKYO_W_INN_PDF },
+    ] },
+  { id: 19, date: "25 Jul", short: "Sat", title: "Sumidagawa Fireworks Festival", loc: "Tokyo / Asakusa", status: "confirmed", phase: "tokyo-2",
+    summary: "🎆 Sumidagawa Fireworks · 🏯 Asakusa · 🎌 Yukata evening",
+    transport: [],
+    activities: [
+      { text: "Sumidagawa Fireworks Festival — Tokyo's largest display, ~1 million spectators, free · since 1733", url: "https://www.japan.travel/en/spot/385/", urlLabel: "Festival info" },
+      "Head to Sumida riverbank early for a good spot — gets extremely crowded",
+      "Consider renting a yukata — hire shops near Asakusa station",
+      "Great views of fireworks reflected off Tokyo Skytree",
+    ],
+    food: ["Yatai food stalls line the riverbank during the festival"],
+    notes: ["~1 million visitors — allow extra time getting home after"],
+    schedule: [
+      { start: "17:00", end: "18:30", label: "Head to riverbank", kind: "walk" },
+      { start: "19:05", end: "20:30", label: "Sumidagawa Fireworks", kind: "activity" },
+      { start: "20:30", end: "22:30", label: "Asakusa evening", kind: "activity" },
+    ],
+    bookings: [
+      { label: "TOKYO-W-INN Asakusa · #5660.154.938 PIN 6710", url: TOKYO_W_INN_PDF },
     ] },
   { id: 17, date: "28 Jul", short: "Tue", title: "Fly Tokyo → Delhi", loc: "Haneda", status: "confirmed", phase: "return",
     summary: "✈️ Tokyo → Delhi · overnight transit",
@@ -517,7 +538,7 @@ const GROUND = [
 ];
 
 const STAYS = [
-  { dates: "9–12 Jul",  nights: 3, name: "Tokyo accommodation",   loc: "Tokyo",     cost: "—",              status: "urgent",    ref: "Not in your docs", gbp: null },
+  { dates: "9–12 Jul",  nights: 3, name: "Imano Tokyo Hostel",    loc: "Shinjuku",  cost: "18,857¥ / £88",  status: "confirmed", ref: "Booking.com #6037.580.015 · PIN 5158 · non-refundable · check-in 16:00–23:00", url: IMANO_HOSTEL_PDF, mapUrl: "https://www.google.com/maps/place/Imano+Tokyo+Hostel/@35.6935,139.7077,17z", gbp: 88 },
   { dates: "12–13 Jul", nights: 1, name: "Guest House Moshiripa", loc: "Wakkanai",  cost: "6,996¥ / £33", status: "confirmed", ref: "Booking.com #6413.112.610 · PIN 8709 · breakfast included", url: MOSHIRIPA_PDF, bookingUrl: MOSHIRIPA_URL, mapUrl: "https://www.google.com/maps/place/Guest+House+Moshiripa/@45.4192027,141.6756927,17z", gbp: 33 },
   { dates: "13–14 Jul", nights: 1, name: "Saito Inn さいとう旅館", loc: "Rishiri",   cost: "36,000¥ / £168.70 (2 guests, £84.35 each)", status: "confirmed", ref: "Leika contacted them directly · bikes & ferry pick-up arranged", mapUrl: "https://www.google.com/maps/place/Saito+Inn/@45.244326,141.2193131,17z", gbp: 84.35 },
   { dates: "14–17 Jul", nights: 3, name: "Shimanoyado Rebunshiri", loc: "Rebun",    cost: "72,000¥ / £344 (2 guests, £172 each)", status: "confirmed", ref: "Booking.com #6117.328.292 · PIN 0351 · +81 163 86 2477 · free cancel until 10 Jul", url: REBUNSHIRI_PDF, mapUrl: "https://www.google.com/maps/place/Rebun+Shiri/@45.3019232,141.0469357,17z", gbp: 172 },
@@ -525,18 +546,20 @@ const STAYS = [
   { dates: "19–20 Jul", nights: 1, name: "Hostel Tomar",          loc: "Furano",    cost: "6,900¥ / £32",     status: "confirmed", ref: "Booking.com #5587.910.714 · PIN 9355 · Honcho 2-27, Concierge Furano 3F · check-in 15:00–22:00", url: HOSTEL_TOMAR_PDF, bookingUrl: HOSTEL_TOMAR_URL, mapUrl: "https://www.google.com/maps/place/Tomar+%26+Eversa/@43.3471364,142.388071,17z", gbp: 32 },
   { dates: "20–23 Jul", nights: 3, name: "Grand Hostel LDK",      loc: "Sapporo",   cost: "16,400¥ / £77.48", status: "confirmed", ref: "Booking #409930287671329438 · paid 20 Mar 2026", url: GRAND_HOSTEL_LDK_PDF, bookingUrl: GRAND_HOSTEL_LDK_URL, mapUrl: "https://www.google.com/maps/place/GRAND+HOSTEL+LDK+SAPPORO/@43.0538407,141.3453946,17z", gbp: 77.48 },
   { dates: "23–24 Jul", nights: 1, name: "遊悠館",                 loc: "Chitose",   cost: "7,650¥ / £36",     status: "confirmed", ref: "Booking.com #5255.563.255 · PIN 7684 · free cancel until 21 Jul", url: YUYUKAN_PDF, bookingUrl: YUYUKAN_URL, mapUrl: "https://www.google.com/maps/place/遊悠館/@42.822851,141.6441184,17z", gbp: 36 },
-  { dates: "24–28 Jul", nights: 4, name: "Tokyo accommodation",   loc: "Tokyo",     cost: "—",                status: "urgent",    ref: "Not in your docs", gbp: null },
+  { dates: "24–28 Jul", nights: 4, name: "TOKYO-W-INN Asakusa",   loc: "Asakusa",   cost: "20,720¥ / £97",   status: "confirmed", ref: "Booking.com #5660.154.938 · PIN 6710 · non-refundable · check-in 16:00–23:00", url: TOKYO_W_INN_PDF, mapUrl: "https://www.google.com/maps/place/TOKYO-W-INN+Asakusa/@35.7083,139.7923,17z", gbp: 97 },
 ];
 
 const GEORGE = [
+  { item: "Imano Tokyo Hostel, Shinjuku",        date: "9–12 Jul",  gbp: 88,     yen: "18,857¥", status: "paid" },
   { item: "Ferry Wakkanai → Rishiri",            date: "13 Jul",    gbp: 16.82,  yen: "3,590¥",  status: "paid" },
   { item: "Saito Inn (incl. dinner both nights)", date: "13–14 Jul", gbp: 84.29,  yen: "18,000¥", status: "unpaid" },
   { item: "Shimanoyado Rebunshiri",              date: "14–17 Jul", gbp: 168.62, yen: "36,000¥", status: "unpaid" },
   { item: "Buddy House, Asahikawa",              date: "17–19 Jul", gbp: 81.00,  yen: "17,297¥", status: "paid" },
+  { item: "TOKYO-W-INN Asakusa",                 date: "24–28 Jul", gbp: 97,     yen: "20,720¥", status: "paid" },
 ];
 
 const MAP_STOPS = [
-  { num: 1, name: "Tokyo",          dates: "9–12 Jul & 24–28 Jul", stay: "Accommodation TBC",        lat: 35.6762,    lng: 139.6503,    status: "urgent" },
+  { num: 1, name: "Tokyo",          dates: "9–12 Jul & 24–28 Jul", stay: "Imano Hostel · TOKYO-W-INN Asakusa", lat: 35.6762, lng: 139.6503, status: "confirmed" },
   { num: 2, name: "Wakkanai",       dates: "12–13 Jul",            stay: "Guest House Moshiripa",    lat: 45.4192027, lng: 141.6756927, status: "confirmed" },
   { num: 3, name: "Rishiri Island", dates: "13–14 Jul",            stay: "Saito Inn さいとう旅館",   lat: 45.244326,  lng: 141.2193131, status: "confirmed" },
   { num: 4, name: "Rebun Island",   dates: "14–17 Jul",            stay: "Shimanoyado Rebunshiri",   lat: 45.3019232, lng: 141.0469357, status: "confirmed" },

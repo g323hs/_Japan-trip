@@ -1,4 +1,4 @@
-const CACHE = 'japan-2026-v2';
+const CACHE = 'japan-2026-v3';
 const CORE = [
   './', './index.html', './data.js', './components.jsx', './map.jsx', './app.jsx',
 ];
