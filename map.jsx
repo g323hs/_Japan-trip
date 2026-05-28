@@ -233,7 +233,7 @@ function DayMap({ mapData, onItemClick, focusRef }) {
       if (!containerRef.current || mapRef.current) return;
       const L = window.L;
       const map = L.map(containerRef.current, {
-        scrollWheelZoom: false, zoomControl: true, attributionControl: false,
+        scrollWheelZoom: true, zoomControl: true, attributionControl: false,
       });
       mapRef.current = map;
 
